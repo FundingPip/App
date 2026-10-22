@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cashier POS Terminal | Thisaru Fashion ERP</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://jbaptzrnslowckpsmvnj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_J0SmT_kQLmj8Ra_1qUIOlg_a1EFg0r4';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070709; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+
+    @media print {
+      body * { visibility: hidden !important; }
+      #printableReceipt, #printableReceipt * { visibility: visible !important; }
+      #printableReceipt {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 80mm !important;
+        padding: 4mm !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            display: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            brand: {
+              gold: '#D4AF37',
+              lightgold: '#F3E5AB',
+              darkgold: '#AA8529',
+              dark: '#070709',
+              card: '#111115',
+              panel: '#16161c'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-brand-dark text-zinc-100 font-sans h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- TOP HEADER BAR -->
+  <header class="h-16 bg-zinc-950 border-b border-brand-gold/30 px-4 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 pr-3 border-r border-zinc-800">
+        <img src="hat-transparent.png" onerror="this.src='logo.png'" alt="Logo" class="h-10 w-auto object-contain" />
+        <div>
+          <div class="flex items-baseline gap-1">
+            <span class="font-display font-bold text-base text-brand-gold">THISARU</span>
+            <span class="text-[11px] text-white tracking-[0.2em] uppercase">POS</span>
+          </div>
+          <span class="block text-[9px] font-mono text-emerald-400 -mt-1">● CLOUD DB CONNECTED</span>
+        </div>
+      </div>
+
+      <!-- Navigation / Tabs -->
+      <div class="flex items-center gap-1.5 bg-zinc-900 p-1 rounded-xl border border-zinc-800">
+        <button onclick="switchPosTab('register')" id="tab-register" class="pos-tab px-4 py-1.5 rounded-lg text-xs font-bold bg-brand-gold text-black transition flex items-center gap-1.5">
+          <span>🛒</span> Billing Register
+        </button>
+        <button onclick="switchPosTab('history')" id="tab-history" class="pos-tab px-4 py-1.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white transition flex items-center gap-1.5">
+          <span>📜</span> Shift Sales & Receipts
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-3">
+      <button onclick="openHeldBillsModal()" class="relative px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition">
+        <span>⏸️ Held Bills</span>
+        <span id="heldBillsCount" class="px-1.5 py-0.2 bg-amber-500 text-black font-mono font-extrabold rounded-full text-[11px]">0</span>
+      </button>
+
+      <!-- Live Clock -->
+      <div class="hidden lg:flex flex-col items-end font-mono px-3 border-x border-zinc-800">
+        <span id="liveClock" class="text-xs font-bold text-brand-gold">00:00:00</span>
+        <span id="liveDate" class="text-[10px] text-zinc-400">2026-10-22</span>
+      </div>
+
+      <a href="staff-login.html" class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 text-xs font-bold transition flex items-center gap-1">
+        <span>🔒</span> Exit / Lock
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= TAB 1: BILLING REGISTER ================= -->
+  <main id="view-register" class="flex-1 grid grid-cols-12 overflow-hidden">
+    
+    <!-- LEFT 7 COLS: PRODUCTS & BARCODE -->
+    <section class="col-span-12 lg:col-span-7 flex flex-col border-r border-zinc-800 bg-brand-dark overflow-hidden">
+      
+      <!-- Search Bar -->
+      <div class="p-3 bg-zinc-900/80 border-b border-zinc-800 flex gap-2 items-center">
+        <div class="relative flex-1">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-gold text-base">🔍</span>
+          <input 
+            type="text" 
+            id="barcodeInput" 
+            onkeydown="handleBarcodeKey(event)"
+            oninput="filterCatalogDisplay()"
+            placeholder="Scan Barcode / SKU (e.g. TF-101) & press Enter..." 
+            class="w-full pl-10 pr-4 py-2.5 bg-black border border-zinc-700 focus:border-brand-gold rounded-xl text-sm text-white placeholder-zinc-500 font-mono focus:outline-none"
+          />
+        </div>
+        <button onclick="renderPosCatalog()" class="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition">🔄 Refresh</button>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div id="posCatFilters" class="px-3 py-2 bg-zinc-950/60 border-b border-zinc-800 flex items-center gap-2 overflow-x-auto shrink-0">
+        <button onclick="setPosCategory('all')" id="pcat-all" class="pcat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-brand-gold text-black whitespace-nowrap transition">All Items</button>
+        <button onclick="setPosCategory('frock')" id="pcat-frock" class="pcat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 whitespace-nowrap transition">Frock</button>
+        <button onclick="setPosCategory('blouse')" id="pcat-blouse" class="pcat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 whitespace-nowrap transition">Blouse</button>
+        <button onclick="setPosCategory('ladies')" id="pcat-ladies" class="pcat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 whitespace-nowrap transition">Ladies Wear</button>
+      </div>
+
+      <!-- Product Catalog Grid -->
+      <div id="posProductGrid" class="flex-1 overflow-y-auto p-3 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 content-start">
+         <div class="col-span-4 p-8 text-center text-zinc-500">Loading items from Cloud...</div>
+      </div>
+
+      <!-- Shortcuts Footer -->
+      <div class="px-4 py-2 bg-zinc-950 border-t border-zinc-800 text-[11px] font-mono text-zinc-400 flex justify-between shrink-0">
+        <span><strong class="text-brand-gold">[F2]</strong> Scan SKU</span>
+        <span><strong class="text-brand-gold">[F4]</strong> Hold Bill</span>
+        <span><strong class="text-brand-gold">[F9]</strong> Pay & Print Receipt</span>
+      </div>
+    </section>
+
+    <!-- RIGHT 5 COLS: ACTIVE CART & CHECKOUT -->
+    <section class="col-span-12 lg:col-span-5 flex flex-col bg-brand-card h-full overflow-hidden">
+      
+      <!-- Invoice Header -->
+      <div class="p-3 bg-zinc-900 border-b border-zinc-800 space-y-2 shrink-0">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded bg-brand-gold/20 border border-brand-gold/40 text-brand-gold font-mono text-xs font-bold" id="currentInvoiceNo">INV-Loading...</span>
+            <span class="text-xs text-zinc-400">Retail POS Counter</span>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="holdCurrentBill()" class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30 text-xs font-bold">Hold (F4)</button>
+            <button onclick="clearPosBill()" class="px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 border border-rose-500/30 text-xs font-bold">Clear</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="posCustName" placeholder="👤 Customer Name" class="px-3 py-1.5 rounded-lg bg-black border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-gold" />
+          <input type="tel" id="posCustPhone" placeholder="📞 WhatsApp Phone" class="px-3 py-1.5 rounded-lg bg-black border border-zinc-800 text-xs text-white font-mono focus:outline-none focus:border-brand-gold" />
+        </div>
+      </div>
+
+      <!-- Cart Table Header -->
+      <div class="grid grid-cols-12 px-3 py-2 bg-zinc-950 border-b border-zinc-800 text-[10px] font-mono uppercase text-zinc-400 shrink-0">
+        <div class="col-span-6">Item / Size / Color</div>
+        <div class="col-span-3 text-center">Qty</div>
+        <div class="col-span-3 text-right">Total (Rs.)</div>
+      </div>
+
+      <!-- Cart Items List -->
+      <div id="posCartList" class="flex-1 overflow-y-auto divide-y divide-zinc-800/70 px-2"></div>
+
+      <!-- Totals & Checkout -->
+      <div class="p-3.5 bg-zinc-950 border-t border-zinc-800 space-y-3 shrink-0">
+        <div class="space-y-1 text-xs">
+          <div class="flex justify-between text-zinc-400">
+            <span>Subtotal (<span id="posItemCount">0</span> items):</span>
+            <span id="posSubtotal" class="font-mono font-semibold text-zinc-200">Rs. 0.00</span>
+          </div>
+          <div class="pt-2 border-t border-zinc-800 flex justify-between items-baseline">
+            <span class="text-sm font-bold uppercase tracking-wider text-white">Net Payable</span>
+            <span id="posGrandTotal" class="font-mono font-extrabold text-2xl text-brand-gold">Rs. 0.00</span>
+          </div>
+        </div>
+
+        <button onclick="openPaymentModal()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-gold via-yellow-500 to-brand-darkgold hover:brightness-110 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg flex items-center justify-center gap-2">
+          <span>💳 Proceed to Payment & Print Bill (F9)</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= TAB 2: SHIFT SALES & RECEIPTS ================= -->
+  <main id="view-history" class="hidden flex-1 overflow-y-auto p-6 bg-brand-dark">
+    <div class="max-w-6xl mx-auto space-y-6">
+      <h2 class="font-display text-2xl font-bold text-brand-gold">Shift Transactions & Past Receipts</h2>
+      <div class="bg-brand-card border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="bg-zinc-950 border-b border-zinc-800 text-zinc-400 font-mono uppercase">
+              <th class="p-4">Invoice #</th>
+              <th class="p-4">Time</th>
+              <th class="p-4">Customer</th>
+              <th class="p-4">Method</th>
+              <th class="p-4 font-mono">Net Total</th>
+              <th class="p-4 text-right">Receipt</th>
+            </tr>
+          </thead>
+          <tbody id="salesHistoryBody" class="divide-y divide-zinc-800">
+            <tr><td colspan="6" class="p-8 text-center text-zinc-500">Loading Cloud Transactions...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= PAYMENT MODAL ================= -->
+  <div id="paymentModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-gold/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <h3 class="font-display text-xl font-bold text-brand-gold">Complete Checkout</h3>
+        <button onclick="closePaymentModal()" class="text-zinc-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-black border border-brand-gold/30 flex justify-between items-center">
+        <span class="text-xs uppercase text-zinc-400 font-mono">Net Payable</span>
+        <span id="payModalTotal" class="font-mono font-extrabold text-2xl text-brand-gold">Rs. 0.00</span>
+      </div>
+
+      <div>
+        <label class="block text-xs uppercase text-zinc-400 font-mono mb-2">Payment Method</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="selectPayMethod('CASH')" id="pm-CASH" class="pm-btn py-2.5 rounded-xl border border-brand-gold bg-brand-gold text-black font-bold text-xs">💵 Cash</button>
+          <button type="button" onclick="selectPayMethod('CARD')" id="pm-CARD" class="pm-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs">💳 Card</button>
+          <button type="button" onclick="selectPayMethod('QR')" id="pm-QR" class="pm-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs">📱 QR Pay</button>
+        </div>
+      </div>
+
+      <div id="cashCalculatorSection" class="space-y-3">
+        <label class="block text-xs uppercase font-mono text-zinc-300">Cash Tendered (Rs.)</label>
+        <input type="number" id="cashTenderedInput" oninput="calculateChangeDue()" class="w-full px-4 py-3 rounded-xl bg-black border border-zinc-700 text-xl font-mono font-bold text-white focus:outline-none" />
+        <div class="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex justify-between items-center">
+          <span class="text-xs font-mono uppercase text-emerald-300">Change Due:</span>
+          <span id="changeDueDisplay" class="font-mono font-extrabold text-xl text-emerald-400">Rs. 0.00</span>
+        </div>
+      </div>
+
+      <button onclick="finalizeSale()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg">
+        ✓ Complete Sale & Print Receipt
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= RECEIPT PREVIEW MODAL ================= -->
+  <div id="receiptModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-5 max-w-sm w-full space-y-4">
+      <div class="flex justify-between items-center no-print">
+        <span class="text-xs font-mono text-emerald-400 font-bold">✓ SALE COMPLETED</span>
+        <button onclick="closeReceiptModal()" class="text-xs text-zinc-300">Close ✕</button>
+      </div>
+
+      <!-- 80mm Thermal Print Paper -->
+      <div id="printableReceipt" class="bg-white text-black font-mono text-xs p-5 rounded-xl mx-auto max-w-[290px] space-y-2">
+        <div class="text-center border-b border-dashed border-black pb-2">
+          <h2 class="font-extrabold text-sm">THISARU FASHION</h2>
+          <p class="text-[9px]">Colombo • Sri Lanka | Tel: 077 123 4567</p>
+        </div>
+        <div class="text-[9px] space-y-0.5 border-b border-dashed border-black pb-2">
+          <div class="flex justify-between"><span>INVOICE:</span> <strong id="rcptInvoice">INV-1001</strong></div>
+          <div class="flex justify-between"><span>DATE:</span> <span id="rcptDate">2026-10-22</span></div>
+          <div class="flex justify-between"><span>CASHIER:</span> <span>CASHIER-01</span></div>
+        </div>
+        <div id="rcptItemsList" class="space-y-1 border-b border-dashed border-black pb-2 text-[10px]"></div>
+        <div class="space-y-1 text-[10px] border-b border-dashed border-black pb-2">
+          <div class="flex justify-between font-bold text-sm"><span>TOTAL:</span> <span id="rcptNetTotal">Rs. 0.00</span></div>
+          <div class="flex justify-between"><span>CASH PAID:</span> <span id="rcptTendered">Rs. 0.00</span></div>
+          <div class="flex justify-between font-bold"><span>CHANGE:</span> <span id="rcptChange">Rs. 0.00</span></div>
+        </div>
+        <div class="text-center text-[9px] pt-1">
+          <p>Thank You for Shopping at Thisaru Fashion!</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 no-print">
+        <button onclick="window.print()" class="py-2.5 rounded-xl bg-brand-gold text-black font-extrabold text-xs uppercase">🖨️ Print</button>
+        <button onclick="sendWhatsAppReceipt()" class="py-2.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs uppercase">💬 WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELD BILLS MODAL -->
+  <div id="heldBillsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-zinc-700 rounded-2xl max-w-md w-full p-5 space-y-4">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+        <h3 class="font-bold text-base text-brand-gold">⏸️ Held Bills Queue</h3>
+        <button onclick="document.getElementById('heldBillsModal').classList.add('hidden')" class="text-xs text-zinc-400">✕</button>
+      </div>
+      <div id="heldBillsList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <!-- CASHIER SCRIPT -->
+  <script>
+    let posCart = [];
+    let heldBills = [];
+    let activePayMethod = 'CASH';
+    let lastCompletedReceipt = null;
+    let invoiceCounter = 1001;
+    let cloudCatalog = [];
+    let activeCategory = 'all';
+
+    // Clock
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-LK', { hour12: false });
+      document.getElementById('liveDate').textContent = now.toISOString().split('T')[0];
+    }, 1000);
+
+    // Initial Load
+    window.onload = async () => {
+      await fetchNextInvoiceNo();
+      await renderPosCatalog();
+    };
+
+    function switchPosTab(tab) {
+      ['register', 'history'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-${t}`);
+        if(btn) {
+          btn.classList.remove('bg-brand-gold', 'text-black', 'font-bold');
+          btn.classList.add('text-zinc-400');
+        }
+      });
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      const active = document.getElementById(`tab-${tab}`);
+      if(active) {
+        active.classList.add('bg-brand-gold', 'text-black', 'font-bold');
+        active.classList.remove('text-zinc-400');
+      }
+      if (tab === 'history') renderSalesHistory();
+    }
+
+    async function fetchNextInvoiceNo() {
+      const { data, error } = await db.from('sales').select('id').order('id', { ascending: false }).limit(1);
+      if (!error && data && data.length > 0) {
+        invoiceCounter = 1000 + data.length + 1; // Basic logic to increment invoice visually
+      }
+      document.getElementById('currentInvoiceNo').textContent = `INV-${invoiceCounter}`;
+    }
+
+    // --- SUPABASE: FETCH CATALOG ---
+    async function renderPosCatalog() {
+      const { data, error } = await db.from('products').select('*');
+      if (!error) {
+        cloudCatalog = data || [];
+      }
+      filterCatalogDisplay();
+    }
+
+    function setPosCategory(cat) {
+      activeCategory = cat;
+      document.querySelectorAll('.pcat-btn').forEach(b => {
+        b.classList.remove('bg-brand-gold', 'text-black');
+        b.classList.add('bg-zinc-900', 'text-zinc-300');
+      });
+      const activeBtn = document.getElementById(`pcat-${cat}`);
+      if(activeBtn) {
+        activeBtn.classList.add('bg-brand-gold', 'text-black');
+        activeBtn.classList.remove('bg-zinc-900', 'text-zinc-300');
+      }
+      filterCatalogDisplay();
+    }
+
+    function filterCatalogDisplay() {
+      const grid = document.getElementById('posProductGrid');
+      const query = document.getElementById('barcodeInput').value.trim().toLowerCase();
+
+      const filtered = cloudCatalog.filter(item => {
+        const matchCat = activeCategory === 'all' || item.category === activeCategory;
+        const matchQuery = !query || item.name.toLowerCase().includes(query) || item.sku.toLowerCase().includes(query);
+        return matchCat && matchQuery;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-4 p-8 text-center text-zinc-500">No items found matching the criteria.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => `
+        <div onclick="addToPosBill(${item.id})" class="cursor-pointer rounded-2xl bg-brand-card border border-zinc-800 hover:border-brand-gold p-2.5 flex flex-col justify-between transition hover:-translate-y-0.5 shadow-md">
+          <div>
+            <div class="relative h-28 rounded-xl overflow-hidden bg-zinc-900 mb-2">
+              <img src="${item.image || 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80'}" class="w-full h-full object-cover" />
+              <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/85 text-brand-gold font-mono text-[10px] font-bold">${item.sku}</span>
+              <span class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded font-mono text-[10px] font-bold ${item.stock <= 5 ? 'bg-rose-600 text-white' : 'bg-black/85 text-emerald-400'}">
+                Stock: ${item.stock}
+              </span>
+            </div>
+            <h4 class="font-semibold text-xs text-zinc-100 line-clamp-1">${item.name}</h4>
+            <p class="font-mono font-extrabold text-sm text-brand-gold mt-1">Rs. ${item.price.toLocaleString()}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleBarcodeKey(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const code = e.target.value.trim().toLowerCase();
+        const match = cloudCatalog.find(p => p.sku.toLowerCase() === code);
+        if (match) {
+          addToPosBill(match.id);
+          e.target.value = '';
+          filterCatalogDisplay();
+        } else {
+          alert('SKU not found in database!');
+        }
+      }
+    }
+
+    function addToPosBill(id) {
+      const prod = cloudCatalog.find(p => p.id === id);
+      if (!prod || prod.stock <= 0) return alert('Item out of stock!');
+
+      const existing = posCart.find(i => i.id === id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        posCart.push({
+          id: prod.id,
+          sku: prod.sku,
+          name: prod.name,
+          price: prod.price,
+          cost: prod.cost || 3500,
+          qty: 1,
+          image: prod.image
+        });
+      }
+      renderPosCart();
+    }
+
+    function updateCartQty(id, delta) {
+      const item = posCart.find(i => i.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) posCart = posCart.filter(i => i.id !== id);
+      renderPosCart();
+    }
+
+    function removeCartItem(id) {
+      posCart = posCart.filter(i => i.id !== id);
+      renderPosCart();
+    }
+
+    function clearPosBill() {
+      posCart = [];
+      document.getElementById('posCustName').value = '';
+      document.getElementById('posCustPhone').value = '';
+      renderPosCart();
+    }
+
+    function renderPosCart() {
+      const container = document.getElementById('posCartList');
+      if (posCart.length === 0) {
+        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-zinc-500 py-12 text-center"><p class="text-xs font-semibold">Cart is empty</p></div>`;
+        updatePosTotals();
+        return;
+      }
+
+      container.innerHTML = posCart.map(i => `
+        <div class="py-2.5 px-1 grid grid-cols-12 items-center gap-1 text-xs">
+          <div class="col-span-6 pr-1">
+            <p class="font-semibold text-zinc-100 truncate">${i.name}</p>
+            <span class="font-mono text-[10px] text-zinc-400">Rs.${i.price.toLocaleString()}</span>
+          </div>
+          <div class="col-span-3 flex items-center justify-center gap-1">
+            <button onclick="updateCartQty(${i.id}, -1)" class="w-6 h-6 rounded bg-zinc-800 font-bold">-</button>
+            <span class="font-mono font-bold w-6 text-center">${i.qty}</span>
+            <button onclick="updateCartQty(${i.id}, 1)" class="w-6 h-6 rounded bg-zinc-800 font-bold">+</button>
+          </div>
+          <div class="col-span-3 text-right flex flex-col items-end">
+            <span class="font-mono font-bold text-white">${(i.price * i.qty).toLocaleString()}</span>
+            <button onclick="removeCartItem(${i.id})" class="text-[10px] text-rose-400 hover:underline">Remove</button>
+          </div>
+        </div>
+      `).join('');
+
+      updatePosTotals();
+    }
+
+    function updatePosTotals() {
+      let subtotal = 0;
+      let totalQty = 0;
+      posCart.forEach(i => {
+        subtotal += i.price * i.qty;
+        totalQty += i.qty;
+      });
+
+      document.getElementById('posItemCount').textContent = totalQty;
+      document.getElementById('posSubtotal').textContent = `Rs. ${subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      document.getElementById('posGrandTotal').textContent = `Rs. ${subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+    }
+
+    function holdCurrentBill() {
+      if (posCart.length === 0) return alert('Cart is empty');
+      heldBills.push({
+        time: new Date().toLocaleTimeString(),
+        cust: document.getElementById('posCustName').value || 'Walk-in',
+        cart: [...posCart]
+      });
+      document.getElementById('heldBillsCount').textContent = heldBills.length;
+      clearPosBill();
+      alert('Bill held successfully.');
+    }
+
+    function openHeldBillsModal() {
+      const list = document.getElementById('heldBillsList');
+      document.getElementById('heldBillsModal').classList.remove('hidden');
+      if (heldBills.length === 0) {
+        list.innerHTML = `<p class="text-xs text-zinc-500 text-center py-4">No held bills.</p>`;
+        return;
+      }
+      list.innerHTML = heldBills.map((h, idx) => `
+        <div class="p-3 rounded-xl bg-black border border-zinc-800 flex justify-between items-center text-xs">
+          <div><p class="font-bold text-brand-gold">${h.cust} (${h.time})</p><p class="text-zinc-400">${h.cart.length} items</p></div>
+          <button onclick="recallHeldBill(${idx})" class="px-3 py-1 rounded bg-brand-gold text-black font-bold">Recall</button>
+        </div>
+      `).join('');
+    }
+
+    function recallHeldBill(idx) {
+      const hb = heldBills.splice(idx, 1)[0];
+      posCart = hb.cart;
+      document.getElementById('heldBillsCount').textContent = heldBills.length;
+      document.getElementById('heldBillsModal').classList.add('hidden');
+      renderPosCart();
+    }
+
+    // Checkout & Payment
+    function openPaymentModal() {
+      if (posCart.length === 0) return alert('Cart is empty');
+      let total = posCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      document.getElementById('payModalTotal').textContent = `Rs. ${total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      document.getElementById('cashTenderedInput').value = total;
+      calculateChangeDue();
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    function selectPayMethod(method) {
+      activePayMethod = method;
+      document.querySelectorAll('.pm-btn').forEach(b => {
+        b.classList.remove('border-brand-gold', 'bg-brand-gold', 'text-black');
+        b.classList.add('border-zinc-800', 'bg-zinc-900', 'text-zinc-300');
+      });
+      const active = document.getElementById(`pm-${method}`);
+      active.classList.add('border-brand-gold', 'bg-brand-gold', 'text-black');
+      active.classList.remove('border-zinc-800', 'bg-zinc-900', 'text-zinc-300');
+    }
+
+    function calculateChangeDue() {
+      let total = posCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      let tendered = Number(document.getElementById('cashTenderedInput').value) || 0;
+      let change = tendered - total;
+      document.getElementById('changeDueDisplay').textContent = `Rs. ${change.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+    }
+
+    // --- SUPABASE: FINALIZE SALE & REDUCE STOCK ---
+    async function finalizeSale() {
+      let total = posCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      let tendered = Number(document.getElementById('cashTenderedInput').value) || total;
+
+      // 1. Update Stock in Supabase
+      for (let ci of posCart) {
+        let prod = cloudCatalog.find(p => p.id === ci.id);
+        if (prod) {
+          let newStock = Math.max(0, prod.stock - ci.qty);
+          await db.from('products').update({ stock: newStock }).eq('id', ci.id);
+        }
+      }
+
+      // 2. Insert Sale Record to Supabase
+      const now = new Date();
+      const receipt = {
+        id: Date.now(), // Generate unique ID
+        invoice_no: `INV-${invoiceCounter}`,
+        timestamp: `${now.toISOString().split('T')[0]} ${now.toTimeString().slice(0,5)}`,
+        customer: document.getElementById('posCustName').value || 'Walk-in',
+        phone: document.getElementById('posCustPhone').value || '',
+        items: posCart,
+        net_total: total,
+        pay_method: activePayMethod,
+        tendered: tendered,
+        change: Math.max(0, tendered - total)
+      };
+
+      const { error } = await db.from('sales').insert([receipt]);
+      if (error) {
+        console.error("Sale Error:", error);
+        alert('Error saving receipt to cloud!');
+        return;
+      }
+
+      lastCompletedReceipt = { invoiceNo: receipt.invoice_no, ...receipt };
+      invoiceCounter++;
+      document.getElementById('currentInvoiceNo').textContent = `INV-${invoiceCounter}`;
+      
+      closePaymentModal();
+      showReceiptModal(lastCompletedReceipt);
+      clearPosBill();
+      renderPosCatalog(); // Refresh latest stock
+    }
+
+    function showReceiptModal(r) {
+      document.getElementById('rcptInvoice').textContent = r.invoiceNo;
+      document.getElementById('rcptDate').textContent = r.timestamp;
+      document.getElementById('rcptNetTotal').textContent = `Rs. ${r.net_total.toLocaleString()}`;
+      document.getElementById('rcptTendered').textContent = `Rs. ${r.tendered.toLocaleString()}`;
+      document.getElementById('rcptChange').textContent = `Rs. ${r.change.toLocaleString()}`;
+
+      document.getElementById('rcptItemsList').innerHTML = r.items.map(i => `
+        <div class="flex justify-between">
+          <span>${i.name} x${i.qty}</span>
+          <span>${(i.price * i.qty).toLocaleString()}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('receiptModal').classList.remove('hidden');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.add('hidden');
+    }
+
+    function sendWhatsAppReceipt() {
+      if (!lastCompletedReceipt) return;
+      let r = lastCompletedReceipt;
+      let phone = r.phone.replace(/\D/g, '');
+      if (!phone) {
+        phone = prompt('Enter WhatsApp Number (e.g. 0771234567):', '94');
+        if (!phone) return;
+      }
+      if (phone.startsWith('0')) phone = '94' + phone.slice(1);
+      const msg = `*THISARU FASHION - RECEIPT*\nInvoice: ${r.invoiceNo}\nTotal: Rs. ${r.net_total.toLocaleString()}\nThank you!`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // --- SUPABASE: FETCH SALES HISTORY ---
+    async function renderSalesHistory() {
+      const tbody = document.getElementById('salesHistoryBody');
+      tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-zinc-500">Loading Cloud Transactions...</td></tr>`;
+
+      const { data, error } = await db.from('sales').select('*').order('id', { ascending: false }).limit(50);
+      
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-zinc-500">No transactions recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(s => `
+        <tr class="hover:bg-zinc-900/60">
+          <td class="p-4 font-mono font-bold text-brand-gold">${s.invoice_no}</td>
+          <td class="p-4 font-mono text-zinc-400">${s.timestamp}</td>
+          <td class="p-4">${s.customer}</td>
+          <td class="p-4"><span class="px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-mono">${s.pay_method}</span></td>
+          <td class="p-4 font-mono font-bold text-emerald-400">Rs. ${s.net_total.toLocaleString()}</td>
+          <td class="p-4 text-right">
+             <button onclick='showReceiptModal({ invoiceNo: "${s.invoice_no}", timestamp: "${s.timestamp}", net_total: ${s.net_total}, tendered: ${s.tendered}, change: ${s.change}, items: ${JSON.stringify(s.items)} })' class="px-3 py-1 rounded bg-zinc-800 hover:bg-brand-gold hover:text-black font-bold text-xs">View</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

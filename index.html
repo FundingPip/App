@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thisaru Fashion | Premium Ladies & Streetwear Destination</title>
+  
+  <!-- Security Meta Tags -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://jbaptzrnslowckpsmvnj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_J0SmT_kQLmj8Ra_1qUIOlg_a1EFg0r4';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            display: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            brand: {
+              gold: '#D4AF37',
+              lightgold: '#F3E5AB',
+              darkgold: '#AA8529',
+              dark: '#0a0a0a',
+              card: '#141414'
+            }
+          },
+          keyframes: {
+            marquee: {
+              '0%': { transform: 'translateX(0%)' },
+              '100%': { transform: 'translateX(-50%)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-12px)' },
+            }
+          },
+          animation: {
+            marquee: 'marquee 25s linear infinite',
+            float: 'float 4s ease-in-out infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+  </style>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900 dark:bg-brand-dark dark:text-zinc-100 font-sans transition-colors duration-300 overflow-x-hidden">
+
+  <!-- 1. INFINITE MARQUEE TOP BAR -->
+  <div class="bg-brand-gold text-black font-bold text-xs sm:text-sm py-2 overflow-hidden whitespace-nowrap border-b border-black/20 shadow-md">
+    <div class="inline-block animate-marquee">
+      <span class="mx-6">✨ PREMIUM QUALITY FABRICS</span>
+      <span class="mx-6">🚚 ISLANDWIDE CASH ON DELIVERY AVAILABLE</span>
+      <span class="mx-6">🏬 VISIT OUR PHYSICAL SHOWROOM TODAY</span>
+      <span class="mx-6">✨ NEW LADIES COLLECTION ARRIVED</span>
+      <span class="mx-6">✨ PREMIUM QUALITY FABRICS</span>
+      <span class="mx-6">🚚 ISLANDWIDE CASH ON DELIVERY AVAILABLE</span>
+      <span class="mx-6">🏬 VISIT OUR PHYSICAL SHOWROOM TODAY</span>
+      <span class="mx-6">✨ NEW LADIES COLLECTION ARRIVED</span>
+    </div>
+  </div>
+
+  <!-- 2. GLASSMORPHISM NAVBAR -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-amber-50 dark:bg-brand-dark/90 border-b border-zinc-300/80 dark:border-zinc-800 shadow-sm transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-0.5 group py-1">
+        <div class="relative flex items-center justify-center">
+          <img src="hat-transparent.png" alt="Thisaru Fashion Logo" class="h-16 sm:h-20 w-auto object-contain drop-shadow-[0_2px_12px_rgba(212,175,55,0.4)] group-hover:scale-105 transition-transform duration-300" />
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-baseline tracking-wider">
+            <span class="font-display font-extrabold text-2xl sm:text-3xl text-brand-gold tracking-wide drop-shadow-[0_2px_10px_rgba(212,175,55,0.3)]">THISARU</span>
+            <span class="ml-2 font-sans font-light text-base sm:text-xl text-zinc-900 dark:text-white tracking-[0.25em] uppercase transition-colors">FASHION</span>
+          </div>
+          <span class="text-[9px] uppercase tracking-[0.3em] text-brand-darkgold dark:text-brand-gold/70 -mt-0.5 font-medium transition-colors">Colombo • Sri Lanka</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 font-medium text-sm tracking-wide">
+        <a href="#drops" class="hover:text-brand-gold transition duration-300">New Arrivals ✨</a>
+        <a href="#categories" class="hover:text-brand-gold transition duration-300">Collections</a>
+        <a href="#why-us" class="hover:text-brand-gold transition duration-300">Why Us</a>
+        <a href="#showroom" class="hover:text-brand-gold transition duration-300">Our Store 📍</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <button id="themeToggle" aria-label="Toggle Theme" class="p-2.5 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:text-brand-gold transition duration-300">
+          <span id="themeIcon">☀️</span>
+        </button>
+
+        <button onclick="toggleCart()" class="relative flex items-center gap-2 bg-black dark:bg-brand-gold text-brand-gold dark:text-black font-bold px-5 py-2.5 rounded-full hover:scale-105 transition duration-300 shadow-lg border border-brand-gold/30">
+          <span>🛍️ Bag</span>
+          <span id="cartCount" class="bg-brand-gold dark:bg-black text-black dark:text-brand-gold text-xs px-2 py-0.5 rounded-full font-extrabold">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. HERO SECTION -->
+  <section class="relative overflow-hidden py-16 sm:py-20 lg:py-28">
+    <div class="absolute -top-32 -left-24 w-[500px] h-[500px] bg-brand-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="absolute top-1/2 -right-32 w-[400px] h-[400px] bg-brand-lightgold/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-12 gap-12 items-center">
+        <div class="lg:col-span-7 space-y-7 text-center lg:text-left">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-semibold tracking-widest uppercase">
+            <span class="w-2 h-2 rounded-full bg-brand-gold animate-pulse"></span> Premium Physical Store + Online Megastore
+          </div>
+
+          <h1 class="font-display font-extrabold text-5xl sm:text-6xl lg:text-7xl leading-[1.1] tracking-tight">
+            ELEVATE YOUR <br />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-lightgold via-brand-gold to-yellow-600">STYLE.</span>
+          </h1>
+
+          <p class="text-zinc-600 dark:text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
+            විශේෂයෙන් කාන්තාවන් සඳහා වූ නවීනතම විලාසිතා සහ පවුලේ සැමට ගැළපෙන Premium තත්ත්වයේ ඇඳුම්. අපගේ ප්‍රදර්ශනාගාරයට පැමිණ හෝ නිවසටම ගෙන්වා ගන්න!
+          </p>
+
+          <div class="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
+            <a href="#drops" class="px-8 py-4 rounded-full bg-gradient-to-r from-brand-gold to-yellow-600 text-black font-extrabold text-sm uppercase tracking-wide hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] hover:-translate-y-1 transition duration-300">
+              Shop Collection →
+            </a>
+            <a href="#showroom" class="px-8 py-4 rounded-full border border-zinc-300 dark:border-brand-gold/50 font-bold text-sm hover:bg-zinc-100 dark:hover:bg-brand-gold/10 transition duration-300">
+              📍 Visit Our Store
+            </a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 relative">
+          <div class="relative mx-auto max-w-md animate-float">
+            <div class="aspect-[3/4] rounded-t-full rounded-b-3xl overflow-hidden border border-brand-gold/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative group p-1 bg-gradient-to-b from-brand-gold/20 to-transparent">
+              <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80" alt="Model" class="w-full h-full object-cover rounded-t-full rounded-b-3xl group-hover:scale-105 transition duration-1000" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. DYNAMIC DATABASE PRODUCT CATALOG -->
+  <section id="drops" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 reveal">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 border-b border-brand-gold/20 pb-6">
+      <div>
+        <span class="text-brand-gold font-bold text-xs uppercase tracking-[0.2em]">Curated Collection</span>
+        <h2 class="font-display font-bold text-4xl sm:text-5xl mt-2">TRENDING NOW ✨</h2>
+      </div>
+
+      <div id="categories" class="flex flex-wrap gap-2">
+        <button onclick="filterProducts('all')" class="cat-btn active-cat px-6 py-2.5 rounded-full text-xs uppercase tracking-wider font-bold bg-brand-gold text-black transition shadow-lg">All</button>
+        <button onclick="filterProducts('frock')" class="cat-btn px-6 py-2.5 rounded-full text-xs uppercase tracking-wider font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-brand-gold/20 transition">Frock</button>
+        <button onclick="filterProducts('blouse')" class="cat-btn px-6 py-2.5 rounded-full text-xs uppercase tracking-wider font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-brand-gold/20 transition">Blouse</button>
+        <button onclick="filterProducts('ladies')" class="cat-btn px-6 py-2.5 rounded-full text-xs uppercase tracking-wider font-bold bg-zinc-200 dark:bg-zinc-800 hover:bg-brand-gold/20 transition">Ladies Wear</button>
+      </div>
+    </div>
+
+    <!-- Product Grid Loaded from Manager Database -->
+    <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="col-span-4 p-12 text-center text-zinc-500">Loading Latest Collection from Cloud...</div>
+    </div>
+  </section>
+
+  <!-- 5. WHY US -->
+  <section id="why-us" class="py-20 bg-zinc-950 text-white my-12 reveal relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center mb-12">
+        <h2 class="font-display text-4xl text-brand-gold">The Thisaru Promise</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+        <div class="p-8 rounded-2xl bg-zinc-900/80 border border-brand-gold/20">
+          <div class="text-4xl mb-4">🚚</div>
+          <h3 class="font-bold text-lg font-display">Islandwide COD</h3>
+          <p class="text-zinc-400 text-sm mt-3 font-light">ලංකාවේ ඕනෑම තැනකට ගෙන්වා ගෙන මුදල් ගෙවන්න.</p>
+        </div>
+        <div class="p-8 rounded-2xl bg-zinc-900/80 border border-brand-gold/20">
+          <div class="text-4xl mb-4">🔄</div>
+          <h3 class="font-bold text-lg font-display">Size Exchange</h3>
+          <p class="text-zinc-400 text-sm mt-3 font-light">Size එක නොගැළපේ නම් දින 7ක් ඇතුළත මාරු කරගත හැක.</p>
+        </div>
+        <div class="p-8 rounded-2xl bg-zinc-900/80 border border-brand-gold/20">
+          <div class="text-4xl mb-4">✨</div>
+          <h3 class="font-bold text-lg font-display">Premium Fabric</h3>
+          <p class="text-zinc-400 text-sm mt-3 font-light">උසස්ම තත්ත්වයේ රෙදිපිළි පමණයි.</p>
+        </div>
+        <div class="p-8 rounded-2xl bg-zinc-900/80 border border-brand-gold/20">
+          <div class="text-4xl mb-4">🏬</div>
+          <h3 class="font-bold text-lg font-display">Trusted Store</h3>
+          <p class="text-zinc-400 text-sm mt-3 font-light">අපගේ ප්‍රදර්ශනාගාරයට පැමිණ මිලදී ගන්න.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. SHOWROOM -->
+  <section id="showroom" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 reveal">
+    <div class="rounded-3xl bg-zinc-950 text-white p-1 border border-brand-gold/30 shadow-xl overflow-hidden">
+      <div class="bg-zinc-900 rounded-[22px] p-8 sm:p-12">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div class="space-y-6">
+            <span class="px-4 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold font-bold text-xs uppercase tracking-widest">📍 Visit Our Boutique</span>
+            <h2 class="font-display font-bold text-4xl sm:text-5xl leading-tight">අපගේ ප්‍රදර්ශනාගාරයට පැමිණ වෙනස අත්විඳින්න.</h2>
+            <div class="space-y-4 pt-4 text-sm text-zinc-300">
+              <p class="flex items-center gap-4 bg-black/40 p-3 rounded-xl border border-zinc-800"><span class="text-brand-gold text-xl">📍</span> <strong>ලිපිනය:</strong> No. 125, Main Street, Colombo</p>
+              <p class="flex items-center gap-4 bg-black/40 p-3 rounded-xl border border-zinc-800"><span class="text-brand-gold text-xl">🕒</span> <strong>විවෘත වේලාවන්:</strong> සඳුදා - ඉරිදා (පෙ.ව. 9:30 - රාත්‍රී 8:30)</p>
+              <p class="flex items-center gap-4 bg-black/40 p-3 rounded-xl border border-zinc-800"><span class="text-brand-gold text-xl">📞</span> <strong>HotLine:</strong> +94 77 123 4567</p>
+            </div>
+          </div>
+          <div class="rounded-2xl overflow-hidden border-2 border-brand-gold/20 h-96">
+            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80" alt="Store" class="w-full h-full object-cover" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. CART DRAWER -->
+  <div id="cartOverlay" onclick="toggleCart()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden"></div>
+  <aside id="cartDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-zinc-950 border-l border-brand-gold/30 z-50 transform translate-x-full transition-transform duration-500 flex flex-col shadow-2xl">
+    <div class="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-900">
+      <h3 class="font-display font-bold text-2xl text-brand-gold">Your Bag ✨</h3>
+      <button onclick="toggleCart()" class="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 transition">✕</button>
+    </div>
+    <div id="cartItems" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+    <div class="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 space-y-5">
+      <div class="flex justify-between font-display font-bold text-xl">
+        <span>Total (COD):</span>
+        <span id="cartTotal" class="text-brand-gold">Rs. 0</span>
+      </div>
+      <div class="space-y-3">
+        <input id="custName" type="text" placeholder="ඔබේ නම (Your Name)" class="w-full px-4 py-3 rounded-xl bg-white dark:bg-black border border-zinc-700 text-sm focus:outline-none focus:border-brand-gold" />
+        <input id="custPhone" type="tel" placeholder="දුරකථන අංකය (Phone Number)" class="w-full px-4 py-3 rounded-xl bg-white dark:bg-black border border-zinc-700 text-sm focus:outline-none focus:border-brand-gold" />
+        <input id="custAddress" type="text" placeholder="ලිපිනය (Delivery Address)" class="w-full px-4 py-3 rounded-xl bg-white dark:bg-black border border-zinc-700 text-sm focus:outline-none focus:border-brand-gold" />
+      </div>
+      <button onclick="checkoutWhatsApp()" class="w-full py-4 rounded-xl bg-brand-gold hover:bg-brand-lightgold text-black font-bold text-sm uppercase tracking-widest transition shadow-lg">
+        Place Order via WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <!-- 8. FOOTER -->
+  <footer class="border-t border-zinc-200 dark:border-zinc-800 py-12 text-center text-sm text-zinc-500 bg-zinc-50 dark:bg-zinc-950">
+    <img src="logo.png" alt="Thisaru Fashion" class="h-12 w-auto mx-auto mb-6 opacity-80" />
+    <p class="font-display text-lg mb-2 text-zinc-800 dark:text-zinc-300">Thisaru Fashion Premium Boutique</p>
+    <p>© 2026 Thisaru Fashion. All Rights Reserved. Secured Architecture.</p>
+
+    <div class="mt-5 flex justify-center items-center">
+      <a href="staff-login.html" target="_blank" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium text-zinc-500 hover:text-brand-gold bg-zinc-900/40 hover:bg-zinc-900 border border-zinc-800 hover:border-brand-gold/40 shadow-sm transition uppercase group">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+        <span class="text-[11px]">🔐 Staff Portal Login</span>
+        <span class="opacity-0 group-hover:opacity-100 -ml-1 transition">→</span>
+      </a>
+    </div>
+  </footer>
+
+  <!-- 9. JAVASCRIPT CONNECTED TO SUPABASE -->
+  <script>
+    const SHOP_WHATSAPP_NUMBER = "94771234567";
+
+    function sanitize(str) {
+      const div = document.createElement('div');
+      div.textContent = str ? String(str).trim() : '';
+      return div.innerHTML;
+    }
+
+    let cart = [];
+    let selectedSizes = {};
+    let cloudStoreProducts = [];
+
+    // --- SUPABASE: FETCH PRODUCTS ---
+    async function fetchCloudProducts() {
+      const { data, error } = await db.from('products').select('*');
+      if (!error && data) {
+        cloudStoreProducts = data;
+      }
+      renderProducts('all');
+    }
+
+    // Initial Load
+    window.onload = () => {
+      fetchCloudProducts();
+      updateCartUI();
+    };
+
+    function renderProducts(filter = 'all') {
+      const grid = document.getElementById('productGrid');
+      const filtered = filter === 'all' ? cloudStoreProducts : cloudStoreProducts.filter(p => p.category === filter);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-4 p-12 text-center text-zinc-500">No items available in this category.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(product => {
+        const currentSize = selectedSizes[product.id] || 'L';
+        return `
+          <div class="group rounded-3xl bg-white dark:bg-brand-card border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:-translate-y-2 hover:shadow-xl transition duration-500 flex flex-col">
+            <div class="relative aspect-[4/5] overflow-hidden bg-zinc-900 p-1">
+              <div class="w-full h-full rounded-2xl overflow-hidden relative">
+                <img src="${product.image || 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=700&q=80'}" alt="${sanitize(product.name)}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" loading="lazy" />
+                <span class="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-bold bg-black/70 text-brand-gold backdrop-blur-md uppercase tracking-widest border border-brand-gold/30">
+                  ${product.sku}
+                </span>
+              </div>
+            </div>
+
+            <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <h3 class="font-display font-bold text-lg line-clamp-1 group-hover:text-brand-gold transition">${sanitize(product.name)}</h3>
+                <p class="font-bold text-xl text-brand-gold mt-1">Rs. ${product.price.toLocaleString()}</p>
+              </div>
+
+              <div>
+                <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-2">Select Size</p>
+                <div class="flex gap-2">
+                  ${['S', 'M', 'L', 'XL'].map(size => `
+                    <button onclick="selectSize(${product.id}, '${size}')" class="w-10 h-10 rounded-full text-xs font-bold transition ${currentSize === size ? 'bg-brand-gold text-black' : 'border border-zinc-700 text-zinc-400 hover:text-white'}">${size}</button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <button onclick="addToCart(${product.id})" class="w-full py-3.5 rounded-full border border-brand-gold/50 hover:bg-brand-gold text-black dark:text-white hover:text-black font-bold text-sm transition uppercase tracking-wider">
+                Add to Bag
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectSize(productId, size) {
+      selectedSizes[productId] = size;
+      const activeBtn = document.querySelector('.active-cat');
+      const currentCategory = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'all';
+      renderProducts(currentCategory);
+    }
+
+    function filterProducts(category) {
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.classList.remove('active-cat', 'bg-brand-gold', 'text-black', 'shadow-lg');
+        btn.classList.add('bg-zinc-200', 'dark:bg-zinc-800', 'text-zinc-600', 'dark:text-zinc-300');
+      });
+      event.currentTarget.classList.add('active-cat', 'bg-brand-gold', 'text-black', 'shadow-lg');
+      event.currentTarget.classList.remove('bg-zinc-200', 'dark:bg-zinc-800', 'text-zinc-600', 'dark:text-zinc-300');
+      renderProducts(category);
+    }
+
+    function addToCart(productId) {
+      const product = cloudStoreProducts.find(p => p.id === productId);
+      if (!product) return;
+      const size = selectedSizes[productId] || 'L';
+      const existing = cart.find(item => item.id === productId && item.size === size);
+
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ ...product, size, qty: 1 });
+      }
+      updateCartUI();
+      toggleCart(true);
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const countEl = document.getElementById('cartCount');
+      const itemsEl = document.getElementById('cartItems');
+      const totalEl = document.getElementById('cartTotal');
+
+      const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+      const totalPrice = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+      countEl.textContent = totalQty;
+      totalEl.textContent = `Rs. ${totalPrice.toLocaleString()}`;
+
+      if (cart.length === 0) {
+        itemsEl.innerHTML = `<p class="text-center text-zinc-500 py-12">Your bag is empty.</p>`;
+        return;
+      }
+
+      itemsEl.innerHTML = cart.map((item, idx) => `
+        <div class="flex items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
+          <img src="${item.image}" class="w-16 h-20 rounded-xl object-cover" />
+          <div class="flex-1">
+            <h4 class="font-display font-bold text-sm line-clamp-1">${sanitize(item.name)}</h4>
+            <p class="text-xs text-zinc-400 mt-1">Size: <strong>${item.size}</strong> | Qty: ${item.qty}</p>
+            <p class="text-sm font-bold text-brand-gold mt-1">Rs. ${(item.price * item.qty).toLocaleString()}</p>
+          </div>
+          <button onclick="removeFromCart(${idx})" class="text-xs text-zinc-400 hover:text-red-500 border border-zinc-700 p-2 rounded-lg">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function toggleCart(forceOpen = false) {
+      const drawer = document.getElementById('cartDrawer');
+      const overlay = document.getElementById('cartOverlay');
+      const isOpen = !drawer.classList.contains('translate-x-full');
+
+      if (forceOpen || !isOpen) {
+        drawer.classList.remove('translate-x-full');
+        overlay.classList.remove('hidden');
+      } else {
+        drawer.classList.add('translate-x-full');
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function checkoutWhatsApp() {
+      if (cart.length === 0) {
+        alert("Please add items to your bag first!");
+        return;
+      }
+
+      const name = sanitize(document.getElementById('custName').value);
+      const phone = sanitize(document.getElementById('custPhone').value);
+      const address = sanitize(document.getElementById('custAddress').value);
+
+      if (!name || !phone || !address) {
+        alert("Please fill in your Name, Phone, and Delivery Address.");
+        return;
+      }
+
+      const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      let orderLines = cart.map((item, i) => 
+        `${i + 1}. ${item.name} [Size: ${item.size}] x ${item.qty} = Rs. ${(item.price * item.qty).toLocaleString()}`
+      ).join('\n');
+
+      const message = 
+        `✨ *NEW ORDER - THISARU FASHION* ✨\n\n` +
+        `*Items:*\n${orderLines}\n\n` +
+        `💰 *Total (COD):* Rs. ${total.toLocaleString()}\n\n` +
+        `👤 *Customer Info:*\n` +
+        `Name: ${name}\n` +
+        `Phone: ${phone}\n` +
+        `Address: ${address}`;
+
+      const url = `https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    themeToggle.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      themeIcon.textContent = isDark ? '☀️' : '🌙';
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('active');
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

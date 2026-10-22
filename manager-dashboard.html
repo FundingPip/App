@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager Control Panel | Thisaru Fashion ERP</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://jbaptzrnslowckpsmvnj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_J0SmT_kQLmj8Ra_1qUIOlg_a1EFg0r4';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+
+  <style>
+    /* Custom Luxury Dark & Gold Scrollbars */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #070709; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; border: 2px solid #070709; }
+    ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+  </style>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            display: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            brand: {
+              gold: '#D4AF37',
+              lightgold: '#F3E5AB',
+              darkgold: '#AA8529',
+              dark: '#070709',
+              card: '#111115',
+              panel: '#16161c'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-brand-dark text-zinc-100 font-sans min-h-screen flex overflow-hidden">
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="w-64 bg-zinc-950 border-r border-brand-gold/20 flex flex-col justify-between shrink-0 select-none">
+    <div class="p-5 space-y-6">
+      <div class="flex items-center gap-3 pb-5 border-b border-zinc-800">
+        <img src="hat-transparent.png" onerror="this.src='logo.png'" alt="Logo" class="h-10 w-auto object-contain" />
+        <div>
+          <h2 class="font-display font-bold text-brand-gold text-base tracking-wider">MANAGER HUB</h2>
+          <span class="text-[10px] font-mono text-zinc-400 uppercase">Control Center v2.0</span>
+        </div>
+      </div>
+
+      <nav class="space-y-1.5 text-xs font-medium">
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-brand-gold text-black font-bold transition">
+          <span>📊</span> Financial Analytics
+        </button>
+        <button onclick="switchTab('products')" id="nav-products" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
+          <span>👗</span> Products / All Items
+        </button>
+        <button onclick="switchTab('staff')" id="nav-staff" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
+          <span>👥</span> Staff & Cashiers
+        </button>
+        <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
+          <span>📦</span> Stock & Pricing
+        </button>
+        <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
+          <span>⚙️</span> Showroom Settings
+        </button>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-zinc-800">
+      <a href="staff-login.html" class="w-full py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 font-bold text-xs flex items-center justify-center gap-2 transition">
+        <span>🚪</span> Exit to Staff Login
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 flex flex-col h-screen overflow-hidden bg-brand-dark">
+    
+    <header class="h-16 bg-zinc-950/80 border-b border-zinc-800 px-6 flex items-center justify-between shrink-0">
+      <h1 id="pageTitle" class="font-display font-bold text-xl text-brand-gold">Financial Overview & Analytics</h1>
+      <div class="flex items-center gap-3 text-xs font-mono">
+        <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">● SECURE CLOUD SESSION ACTIVE</span>
+        <span class="text-zinc-400">| 2026-10-22</span>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+      <!-- ANALYTICS TAB -->
+      <section id="tab-analytics" class="space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="p-5 rounded-2xl bg-brand-card border border-brand-gold/30">
+            <p class="text-xs text-zinc-400 uppercase font-mono">Total Monthly Revenue</p>
+            <p class="text-2xl font-mono font-extrabold text-brand-gold mt-1">Rs. 1,482,500</p>
+            <p class="text-[11px] text-emerald-400 mt-1">↑ +18.4% vs last month</p>
+          </div>
+          <div class="p-5 rounded-2xl bg-brand-card border border-zinc-800">
+            <p class="text-xs text-zinc-400 uppercase font-mono">Today's Net Sales</p>
+            <p id="manTodaySales" class="text-2xl font-mono font-bold text-white mt-1">Rs. 0.00</p>
+            <p class="text-[11px] text-zinc-400 mt-1">Live from POS Database</p>
+          </div>
+          <div class="p-5 rounded-2xl bg-brand-card border border-zinc-800">
+            <p class="text-xs text-zinc-400 uppercase font-mono">Active Staff on Duty</p>
+            <p class="text-2xl font-mono font-bold text-white mt-1">4 Members</p>
+            <p class="text-[11px] text-zinc-400 mt-1">Showroom & Online Dispatch</p>
+          </div>
+          <div class="p-5 rounded-2xl bg-brand-card border border-zinc-800">
+            <p class="text-xs text-zinc-400 uppercase font-mono">Total Low Stock Alerts</p>
+            <p id="lowStockAlertCount" class="text-2xl font-mono font-bold text-rose-400 mt-1">0 Items</p>
+            <p class="text-[11px] text-rose-500 mt-1">Immediate Restock Required</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS TAB -->
+      <section id="tab-products" class="hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 bg-brand-card p-4 rounded-2xl border border-zinc-800">
+          <div id="productCategoryFilters" class="flex flex-wrap gap-2">
+            <button onclick="filterProductsByCat('all')" id="pcat-all" class="pcat-tab px-4 py-2 rounded-xl text-xs font-bold bg-brand-gold text-black transition">All Items</button>
+            <button onclick="filterProductsByCat('frock')" id="pcat-frock" class="pcat-tab px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 transition">Frock</button>
+            <button onclick="filterProductsByCat('blouse')" id="pcat-blouse" class="pcat-tab px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 transition">Blouse</button>
+            <button onclick="filterProductsByCat('ladies')" id="pcat-ladies" class="pcat-tab px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 transition">Ladies Wear</button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="filterLowStockItems()" id="pcat-lowstock" class="pcat-tab px-3.5 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-rose-400 hover:text-white border border-rose-500/40 transition">
+              ⚠️ Low Stock Filter
+            </button>
+            <button onclick="openAddCategoryModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs border border-zinc-700 transition">
+              + Add Category
+            </button>
+            <button onclick="openAddProductModal()" class="px-4 py-2 rounded-xl bg-brand-gold text-black font-extrabold text-xs transition shadow-md hover:brightness-110">
+              + Add Item
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-brand-card border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-zinc-950 border-b border-zinc-800 text-zinc-400 font-mono uppercase">
+                <th class="p-4">Item Photo</th>
+                <th class="p-4">SKU / Code</th>
+                <th class="p-4">Item Name</th>
+                <th class="p-4">Category</th>
+                <th class="p-4 font-mono">Cost (Rs.)</th>
+                <th class="p-4 font-mono">Retail Price (Rs.)</th>
+                <th class="p-4">Stock</th>
+                <th class="p-4 text-right">Actions (Modify / Delete)</th>
+              </tr>
+            </thead>
+            <tbody id="managerProductsTableBody" class="divide-y divide-zinc-800/70">
+               <tr><td colspan="8" class="p-8 text-center text-zinc-500">Loading Cloud Data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- STAFF TAB -->
+      <section id="tab-staff" class="hidden space-y-6">
+        <div class="bg-brand-card p-4 rounded-2xl border border-zinc-800">
+          <h3 class="font-bold text-base text-brand-gold">Showroom Staff Directory</h3>
+        </div>
+      </section>
+
+      <!-- INVENTORY TAB -->
+      <section id="tab-inventory" class="hidden space-y-6">
+        <div id="managerCatalogList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- SETTINGS TAB -->
+      <section id="tab-settings" class="hidden space-y-6">
+        <div class="p-6 rounded-2xl bg-brand-card border border-zinc-800 max-w-2xl space-y-4">
+          <h3 class="font-bold text-lg text-brand-gold">Showroom & WhatsApp Configuration</h3>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL: ADVANCED ADD / EDIT NEW ITEM -->
+  <div id="addItemModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-brand-card border border-brand-gold/40 rounded-3xl max-w-4xl w-full p-8 shadow-2xl my-6 flex flex-col max-h-[90vh]">
+      
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3 shrink-0">
+        <h3 style="font-family: 'Cinzel', serif;" id="modalHeaderTitle" class="text-xl sm:text-2xl font-bold text-brand-gold tracking-wider">+ Add New Clothing Item (Advanced Matrix)</h3>
+        <button onclick="document.getElementById('addItemModal').classList.add('hidden')" class="text-zinc-400 hover:text-white text-lg font-bold px-2">✕</button>
+      </div>
+
+      <input type="hidden" id="editItemUniqueId" value="" />
+
+      <div class="space-y-5 text-xs overflow-y-auto p-2 flex-1 my-3">
+        <!-- Basic Info -->
+        <div>
+          <label class="block text-zinc-400 uppercase font-mono mb-1.5 text-xs">Item Name</label>
+          <input type="text" id="modalName" placeholder="e.g. Elegant Floral Frock" class="w-full px-4 py-3 rounded-xl bg-black border border-zinc-700 text-white text-sm" />
+        </div>
+
+        <div>
+          <label class="block text-zinc-400 uppercase font-mono mb-1.5 text-xs">Category</label>
+          <select id="modalCat" class="w-full px-4 py-3 rounded-xl bg-black border border-zinc-700 text-white text-sm">
+            <option value="frock">Frock</option>
+            <option value="blouse">Blouse</option>
+            <option value="ladies">Ladies Wear</option>
+            <option value="genz">Gen-Z Streetwear</option>
+          </select>
+        </div>
+
+        <!-- Size Manager -->
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2.5">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-zinc-300 uppercase font-mono text-xs">1. Available Sizes</span>
+            <div class="flex gap-1.5">
+              <input type="text" id="newSizeInput" placeholder="New Size (e.g. XXL)" class="px-3 py-1.5 rounded-lg bg-black border border-zinc-700 text-xs text-white w-32" />
+              <button type="button" onclick="addNewSizeOption()" class="px-3.5 py-1.5 rounded-lg bg-brand-gold text-black font-bold text-xs">+</button>
+            </div>
+          </div>
+          <div id="sizeTagsContainer" class="flex flex-wrap gap-2 pt-1"></div>
+        </div>
+
+        <!-- Color Manager -->
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2.5">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-zinc-300 uppercase font-mono text-xs">2. Available Colors</span>
+            <div class="flex gap-1.5">
+              <input type="text" id="newColorInput" placeholder="New Color (e.g. Maroon)" class="px-3 py-1.5 rounded-lg bg-black border border-zinc-700 text-xs text-white w-32" />
+              <button type="button" onclick="addNewColorOption()" class="px-3.5 py-1.5 rounded-lg bg-brand-gold text-black font-bold text-xs">+</button>
+            </div>
+          </div>
+          <div id="colorTagsContainer" class="flex flex-wrap gap-2 pt-1"></div>
+        </div>
+
+        <!-- Matrix Table -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-zinc-300 uppercase font-mono text-xs">3. Stock Qty, Cost & Price per Variant Matrix</label>
+            <button type="button" onclick="generateVariantMatrix()" class="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-brand-gold text-xs font-mono">🔄 Generate Matrix Table</button>
+          </div>
+          <div class="border border-zinc-800 rounded-2xl overflow-hidden bg-black max-h-56 overflow-y-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="bg-zinc-900 border-b border-zinc-800 font-mono text-zinc-400 sticky top-0">
+                  <th class="p-3 text-center">Apply (Tick)</th>
+                  <th class="p-3">Item ID (Auto)</th>
+                  <th class="p-3">Size</th>
+                  <th class="p-3">Color</th>
+                  <th class="p-3">Stock Qty</th>
+                  <th class="p-3 font-mono">Cost (Rs.)</th>
+                  <th class="p-3 font-mono">Price (Rs.)</th>
+                  <th class="p-3">Photo</th>
+                </tr>
+              </thead>
+              <tbody id="variantMatrixTableBody" class="divide-y divide-zinc-900">
+                <tr><td colspan="8" class="p-4 text-center text-zinc-500">Click Generate Matrix Table above</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end pt-4 border-t border-zinc-800 shrink-0">
+        <button onclick="document.getElementById('addItemModal').classList.add('hidden')" class="px-6 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold transition">Cancel</button>
+        <button onclick="saveAdvancedManagerItem()" class="px-8 py-3 rounded-xl bg-brand-gold text-black font-extrabold text-xs shadow-lg hover:brightness-110 transition">Save Item Matrix</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: ADD CATEGORY -->
+  <div id="addCategoryModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-gold/40 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <h3 class="font-display text-lg font-bold text-brand-gold">+ Add New Category</h3>
+        <button onclick="document.getElementById('addCategoryModal').classList.add('hidden')" class="text-zinc-400 hover:text-white">✕</button>
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-mono text-zinc-400 mb-1">Category Name</label>
+        <input type="text" id="newCatName" placeholder="e.g. Maxi Dress, Denim" class="w-full px-3.5 py-2.5 rounded-xl bg-black border border-zinc-700 text-xs text-white" />
+      </div>
+      <div class="flex gap-2 justify-end pt-2">
+        <button onclick="document.getElementById('addCategoryModal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-zinc-800 text-xs">Cancel</button>
+        <button onclick="saveNewCategory()" class="px-4 py-2 rounded-xl bg-brand-gold text-black font-bold text-xs">Save Category</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN DELETE -->
+  <div id="adminDeleteModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-rose-500/50 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <h3 class="font-display text-lg font-bold text-rose-400">🔒 Admin Authorization</h3>
+        <button onclick="document.getElementById('adminDeleteModal').classList.add('hidden')" class="text-zinc-400 hover:text-white">✕</button>
+      </div>
+      <p class="text-xs text-zinc-300">Please enter Admin Password to confirm deletion:</p>
+      <input type="password" id="deleteAdminPin" placeholder="PIN (1234)" class="w-full px-3.5 py-2.5 rounded-xl bg-black border border-zinc-700 text-xs text-white font-mono text-center" />
+      <input type="hidden" id="pendingDeleteId" />
+      <div class="flex gap-2 justify-end pt-2">
+        <button onclick="document.getElementById('adminDeleteModal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-zinc-800 text-xs">Cancel</button>
+        <button onclick="confirmAdminDelete()" class="px-4 py-2 rounded-xl bg-rose-600 text-white font-bold text-xs">Authorize Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROL PANEL SCRIPT -->
+  <script>
+    let activeProductCat = 'all';
+    let catalogCache = [];
+
+    // Load Data initially
+    window.onload = () => {
+      renderManagerProductsTable();
+      calculateTotalSales();
+    };
+
+    function switchTab(tab) {
+      ['analytics', 'products', 'staff', 'inventory', 'settings'].forEach(t => {
+        const section = document.getElementById(`tab-${t}`);
+        if(section) section.classList.add('hidden');
+        const btn = document.getElementById(`nav-${t}`);
+        if(btn) {
+          btn.classList.remove('bg-brand-gold', 'text-black', 'font-bold');
+          btn.classList.add('text-zinc-400', 'hover:text-white');
+        }
+      });
+
+      const activeSec = document.getElementById(`tab-${tab}`);
+      if(activeSec) activeSec.classList.remove('hidden');
+      
+      const activeBtn = document.getElementById(`nav-${tab}`);
+      if(activeBtn) {
+        activeBtn.classList.add('bg-brand-gold', 'text-black', 'font-bold');
+        activeBtn.classList.remove('text-zinc-400', 'hover:text-white');
+      }
+
+      const titles = {
+        analytics: 'Financial Overview & Analytics',
+        products: 'Showroom Catalog & All Items Directory',
+        staff: 'Showroom Staff Directory & Access Control',
+        inventory: 'Stock Quantities & Reorder Management',
+        settings: 'Showroom System Settings'
+      };
+      if(titles[tab]) document.getElementById('pageTitle').textContent = titles[tab];
+
+      if (tab === 'products') renderManagerProductsTable();
+      if (tab === 'inventory') renderManagerCatalog();
+    }
+
+    async function calculateTotalSales() {
+      const { data, error } = await db.from('sales').select('net_total');
+      if (!error && data) {
+        const todayRev = data.reduce((sum, s) => sum + Number(s.net_total), 0);
+        document.getElementById('manTodaySales').textContent = `Rs. ${todayRev.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      }
+    }
+
+    function sanitize(str) {
+      const div = document.createElement('div');
+      div.textContent = str ? String(str).trim() : '';
+      return div.innerHTML;
+    }
+
+    function filterProductsByCat(cat) {
+      activeProductCat = cat;
+      document.querySelectorAll('.pcat-tab').forEach(b => {
+        b.classList.remove('bg-brand-gold', 'text-black', 'font-bold');
+        b.classList.add('bg-zinc-900', 'text-zinc-300');
+      });
+      const target = document.getElementById(`pcat-${cat}`);
+      if(target) {
+        target.classList.add('bg-brand-gold', 'text-black', 'font-bold');
+        target.classList.remove('bg-zinc-900', 'text-zinc-300');
+      }
+      renderManagerProductsTable();
+    }
+
+    function filterLowStockItems() {
+      activeProductCat = 'lowstock';
+      document.querySelectorAll('.pcat-tab').forEach(b => {
+        b.classList.remove('bg-brand-gold', 'text-black', 'font-bold');
+        b.classList.add('bg-zinc-900', 'text-zinc-300');
+      });
+      const target = document.getElementById(`pcat-lowstock`);
+      if(target) {
+        target.classList.add('bg-brand-gold', 'text-black', 'font-bold');
+        target.classList.remove('bg-zinc-900', 'text-zinc-300');
+      }
+      renderManagerProductsTable();
+    }
+
+    // --- SUPABASE: FETCH PRODUCTS ---
+    async function renderManagerProductsTable() {
+      const { data, error } = await db.from('products').select('*').order('id', { ascending: false });
+      if (!error) catalogCache = data || [];
+
+      const tbody = document.getElementById('managerProductsTableBody');
+
+      const lowStockCount = catalogCache.filter(item => item.stock <= 5).length;
+      document.getElementById('lowStockAlertCount').textContent = `${lowStockCount} Items`;
+
+      const filtered = catalogCache.filter(item => {
+        if (activeProductCat === 'all') return true;
+        if (activeProductCat === 'lowstock') return item.stock <= 5;
+        return item.category === activeProductCat;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-zinc-500">No items found in Cloud Database.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const costPrice = item.cost || Math.round(item.price * 0.7);
+        const isLowStock = item.stock <= 5;
+
+        return `
+          <tr class="hover:bg-zinc-900/60 transition">
+            <td class="p-3">
+              <img src="${item.image || 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80'}" alt="Item" class="w-12 h-14 rounded-xl object-cover bg-zinc-900 border border-zinc-800" />
+            </td>
+            <td class="p-4 font-mono font-bold text-brand-gold">${sanitize(item.sku)}</td>
+            <td class="p-4 font-bold text-white text-sm">${sanitize(item.name)}</td>
+            <td class="p-4 uppercase font-mono text-zinc-400">${sanitize(item.category)}</td>
+            <td class="p-4 font-mono text-zinc-300">Rs. ${costPrice.toLocaleString()}</td>
+            <td class="p-4 font-mono font-bold text-brand-gold text-sm">Rs. ${item.price.toLocaleString()}</td>
+            <td class="p-4">
+              <span class="px-2.5 py-1 rounded-full font-mono text-xs font-bold ${isLowStock ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse' : 'bg-emerald-500/20 text-emerald-400'}">
+                ${item.stock} in stock ${isLowStock ? '⚠️' : ''}
+              </span>
+            </td>
+            <td class="p-4 text-right space-x-1.5">
+              <button onclick="openModifyModal(${item.id})" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs transition border border-zinc-700">Modify</button>
+              <button onclick="promptAdminDelete(${item.id})" class="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 font-bold text-xs transition border border-rose-500/30">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openModifyModal(id) {
+      const item = catalogCache.find(i => i.id === id);
+      if (!item) return;
+
+      document.getElementById('editItemUniqueId').value = item.id;
+      document.getElementById('modalName').value = item.name.split(' (')[0];
+      document.getElementById('modalCat').value = item.category;
+      document.getElementById('modalHeaderTitle').textContent = "✏️ Edit Clothing Item Matrix";
+
+      renderSizeAndColorTags();
+      generateVariantMatrixForEdit(item);
+      document.getElementById('addItemModal').classList.remove('hidden');
+    }
+
+    function promptAdminDelete(id) {
+      document.getElementById('pendingDeleteId').value = id;
+      document.getElementById('deleteAdminPin').value = '';
+      document.getElementById('adminDeleteModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('deleteAdminPin').focus(), 100);
+    }
+
+    // --- SUPABASE: DELETE PRODUCT ---
+    async function confirmAdminDelete() {
+      const pin = document.getElementById('deleteAdminPin').value.trim();
+      const id = Number(document.getElementById('pendingDeleteId').value);
+
+      if (pin === '1234') {
+        await db.from('products').delete().eq('id', id);
+        document.getElementById('adminDeleteModal').classList.add('hidden');
+        renderManagerProductsTable();
+        alert('Item successfully deleted from Cloud Database.');
+      } else {
+        alert('✕ Incorrect Admin Password!');
+      }
+    }
+
+    let currentAvailableSizes = ['S', 'M', 'L', 'XL'];
+    let currentAvailableColors = ['Red', 'Blue', 'Black', 'White'];
+
+    function openAddProductModal() {
+      document.getElementById('editItemUniqueId').value = '';
+      document.getElementById('modalName').value = '';
+      document.getElementById('modalHeaderTitle').textContent = "+ Add New Clothing Item (Advanced Matrix)";
+      renderSizeAndColorTags();
+      generateVariantMatrix();
+      document.getElementById('addItemModal').classList.remove('hidden');
+    }
+
+    function renderSizeAndColorTags() {
+      const sizeContainer = document.getElementById('sizeTagsContainer');
+      sizeContainer.innerHTML = currentAvailableSizes.map((sz, idx) => `
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 font-mono text-xs text-zinc-200">
+          ${sz} <button type="button" onclick="removeSizeOption(${idx})" class="text-rose-400 font-bold ml-1">×</button>
+        </span>
+      `).join('');
+
+      const colorContainer = document.getElementById('colorTagsContainer');
+      colorContainer.innerHTML = currentAvailableColors.map((col, idx) => `
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 font-mono text-xs text-zinc-200">
+          ${col} <button type="button" onclick="removeColorOption(${idx})" class="text-rose-400 font-bold ml-1">×</button>
+        </span>
+      `).join('');
+    }
+
+    function addNewSizeOption() {
+      const val = document.getElementById('newSizeInput').value.trim();
+      if (!val || currentAvailableSizes.includes(val)) return;
+      currentAvailableSizes.push(val);
+      document.getElementById('newSizeInput').value = '';
+      renderSizeAndColorTags();
+      generateVariantMatrix();
+    }
+
+    function removeSizeOption(idx) {
+      currentAvailableSizes.splice(idx, 1);
+      renderSizeAndColorTags();
+      generateVariantMatrix();
+    }
+
+    function addNewColorOption() {
+      const val = document.getElementById('newColorInput').value.trim();
+      if (!val || currentAvailableColors.includes(val)) return;
+      currentAvailableColors.push(val);
+      document.getElementById('newColorInput').value = '';
+      renderSizeAndColorTags();
+      generateVariantMatrix();
+    }
+
+    function removeColorOption(idx) {
+      currentAvailableColors.splice(idx, 1);
+      renderSizeAndColorTags();
+      generateVariantMatrix();
+    }
+
+    function previewVariantImage(event, inputId) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById(inputId).value = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function generateVariantMatrix() {
+      const tbody = document.getElementById('variantMatrixTableBody');
+      let html = '';
+      let index = 0;
+      let baseCounter = catalogCache.length + 101;
+
+      currentAvailableSizes.forEach(sz => {
+        currentAvailableColors.forEach(col => {
+          const autoId = `TF-${baseCounter + index}`;
+          const imgInputId = `varImg_${index}`;
+          html += `
+            <tr class="variant-row">
+              <td class="p-3 text-center">
+                <input type="checkbox" checked class="w-4 h-4 rounded bg-black border-zinc-700 text-brand-gold focus:ring-0 variant-checkbox" />
+              </td>
+              <td class="p-3 font-mono font-bold text-brand-gold text-xs sku-cell">${autoId}</td>
+              <td class="p-3 font-mono font-bold text-zinc-100 text-sm size-cell">${sz}</td>
+              <td class="p-3 font-mono text-zinc-200 text-sm color-cell">${col}</td>
+              <td class="p-3"><input type="number" value="10" class="w-20 px-2.5 py-1.5 rounded-lg bg-black border border-zinc-700 text-white font-mono text-sm stock-input" /></td>
+              <td class="p-3"><input type="number" value="3500" class="w-24 px-2.5 py-1.5 rounded-lg bg-black border border-zinc-700 text-white font-mono text-sm cost-input" /></td>
+              <td class="p-3"><input type="number" value="5950" class="w-24 px-2.5 py-1.5 rounded-lg bg-black border border-zinc-700 text-white font-mono text-sm price-input" /></td>
+              <td class="p-3">
+                <input type="file" id="${imgInputId}" accept="image/*" onchange="previewVariantImage(event, '${imgInputId}_val')" class="hidden" />
+                <input type="hidden" id="${imgInputId}_val" class="var-img-input" value="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80" />
+                <button type="button" onclick="document.getElementById('${imgInputId}').click()" class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-brand-gold text-[11px] font-bold border border-zinc-700">📁 Browse</button>
+              </td>
+            </tr>
+          `;
+          index++;
+        });
+      });
+
+      tbody.innerHTML = html || `<tr><td colspan="8" class="p-4 text-center text-zinc-500">No size/color selected</td></tr>`;
+    }
+
+    function generateVariantMatrixForEdit(item) {
+      const tbody = document.getElementById('variantMatrixTableBody');
+      const imgInputId = `varImg_edit`;
+      const sizeVal = item.name.includes('(') ? item.name.split('(')[1].split('/')[0].trim() : 'M';
+      const colorVal = item.name.includes('/') ? item.name.split('/')[1].replace(')', '').trim() : 'Red';
+
+      tbody.innerHTML = `
+        <tr class="variant-row">
+          <td class="p-3 text-center">
+            <input type="checkbox" checked class="w-4 h-4 rounded bg-black border-zinc-700 text-brand-gold focus:ring-0 variant-checkbox" />
+          </td>
+          <td class="p-3 font-mono font-bold text-brand-gold text-xs sku-cell">${item.sku}</td>
+          <td class="p-3 font-mono font-bold text-zinc-100 text-sm size-cell">${sizeVal}</td>
+          <td class="p-3 font-mono text-zinc-200 text-sm color-cell">${colorVal}</td>
+          <td class="p-3"><input type="number" value="${item.stock}" class="w-20 px-2.5 py-1.5 rounded-lg bg-black border border-zinc-700 text-white font-mono text-sm stock-input" /></td>
+          <td class="p-3"><input type="number" value="${item.cost || 3500}" class="w-24 px-2.5 py-1.5 rounded-lg bg-black border border-zinc-700 text-white font-mono text-sm cost-input" /></td>
+          <td class="p-3"><input type="number" value="${item.price}" class="w-24 px-2.5 py-1.5 rounded-lg bg-black border border-zinc-700 text-white font-mono text-sm price-input" /></td>
+          <td class="p-3">
+            <input type="file" id="${imgInputId}" accept="image/*" onchange="previewVariantImage(event, '${imgInputId}_val')" class="hidden" />
+            <input type="hidden" id="${imgInputId}_val" class="var-img-input" value="${item.image}" />
+            <button type="button" onclick="document.getElementById('${imgInputId}').click()" class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-brand-gold text-[11px] font-bold border border-zinc-700">📁 Browse</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    // --- SUPABASE: INSERT / UPDATE PRODUCT ---
+    async function saveAdvancedManagerItem() {
+      const editId = document.getElementById('editItemUniqueId').value;
+      const name = document.getElementById('modalName').value.trim();
+      const category = document.getElementById('modalCat').value;
+
+      if (!name) return alert('Please enter item name.');
+
+      const rows = document.querySelectorAll('.variant-row');
+      let variants = [];
+
+      rows.forEach(r => {
+        const checkbox = r.querySelector('.variant-checkbox');
+        if (checkbox && checkbox.checked) {
+          const sku = r.querySelector('.sku-cell').textContent;
+          const sz = r.querySelector('.size-cell').textContent;
+          const col = r.querySelector('.color-cell').textContent;
+          const st = Number(r.querySelector('.stock-input').value) || 0;
+          const co = Number(r.querySelector('.cost-input').value) || 3500;
+          const pr = Number(r.querySelector('.price-input').value) || 5950;
+          const imgVal = r.querySelector('.var-img-input').value;
+
+          variants.push({ sku, size: sz, color: col, stock: st, cost: co, price: pr, image: imgVal });
+        }
+      });
+
+      if (variants.length === 0) return alert('✕ Please tick at least one variant row!');
+
+      // If editing, delete the old record first
+      if (editId) {
+        await db.from('products').delete().eq('id', Number(editId));
+      }
+
+      // Insert all selected variants into Supabase
+      for (let v of variants) {
+        const newRecord = {
+          id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique int8
+          sku: v.sku,
+          name: `${name} (${v.size} / ${v.color})`,
+          category: category,
+          cost: v.cost,
+          price: v.price,
+          stock: v.stock,
+          image: v.image
+        };
+        const { error } = await db.from('products').insert([newRecord]);
+        if (error) console.error("Error inserting:", error);
+      }
+
+      document.getElementById('addItemModal').classList.add('hidden');
+      renderManagerProductsTable();
+      alert(`Successfully saved to Cloud Database!`);
+    }
+
+    function openAddCategoryModal() {
+      document.getElementById('addCategoryModal').classList.remove('hidden');
+    }
+
+    function saveNewCategory() {
+      const name = document.getElementById('newCatName').value.trim().toLowerCase();
+      if (!name) return;
+      const container = document.getElementById('productCategoryFilters');
+      const newBtn = document.createElement('button');
+      newBtn.className = "pcat-tab px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 transition";
+      newBtn.id = `pcat-${name}`;
+      newBtn.textContent = name.toUpperCase();
+      newBtn.onclick = () => filterProductsByCat(name);
+      container.appendChild(newBtn);
+
+      document.getElementById('newCatName').value = '';
+      document.getElementById('addCategoryModal').classList.add('hidden');
+    }
+
+    function renderManagerCatalog() {
+      const container = document.getElementById('managerCatalogList');
+      container.innerHTML = catalogCache.map(item => `
+        <div class="p-4 rounded-2xl bg-brand-card border border-zinc-800 flex items-center gap-4">
+          <img src="${item.image}" class="w-16 h-20 rounded-xl object-cover bg-zinc-900" />
+          <div class="flex-1">
+            <span class="text-[10px] font-mono text-brand-gold">${item.sku}</span>
+            <h4 class="font-bold text-sm text-white line-clamp-1">${item.name}</h4>
+            <p class="font-mono font-bold text-brand-gold mt-1">Rs. ${item.price.toLocaleString()}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

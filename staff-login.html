@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Portal | Thisaru Fashion Terminal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            display: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            brand: {
+              gold: '#D4AF37',
+              lightgold: '#F3E5AB',
+              darkgold: '#AA8529',
+              dark: '#08080a',
+              card: '#101014'
+            }
+          },
+          keyframes: {
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '20%, 60%': { transform: 'translateX(-8px)' },
+              '40%, 80%': { transform: 'translateX(8px)' }
+            }
+          },
+          animation: {
+            shake: 'shake 0.4s ease-in-out'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(212, 175, 55, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(212, 175, 55, 0.04) 1px, transparent 1px);
+    }
+  </style>
+</head>
+
+<body class="bg-brand-dark text-zinc-100 font-sans min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-grid">
+
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-gold/15 rounded-full blur-[120px] pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-gold/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+  <div class="w-full max-w-md relative z-10">
+    <div class="mb-5 flex justify-between items-center text-xs text-zinc-400">
+      <a href="index.html" class="inline-flex items-center gap-1.5 hover:text-brand-gold transition duration-200">
+        <span>←</span> Return to Public Store
+      </a>
+      <span class="inline-flex items-center gap-1.5 text-zinc-400 font-mono text-[11px]">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> SYSTEM ONLINE
+      </span>
+    </div>
+
+    <div id="loginCard" class="bg-brand-card/90 backdrop-blur-2xl border border-brand-gold/30 rounded-3xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative">
+      
+      <div class="text-center space-y-3 mb-8">
+        <div class="inline-block p-3 rounded-2xl bg-black border border-brand-gold/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+          <img src="hat-transparent.png" onerror="this.src='logo.png'" alt="Thisaru Fashion" class="h-10 w-auto mx-auto object-contain" />
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-2xl tracking-wide text-brand-gold">THISARU FASHION</h1>
+          <p class="text-xs uppercase tracking-[0.25em] text-zinc-400 font-mono mt-0.5">Staff Management Terminal</p>
+        </div>
+      </div>
+
+      <!-- Role Selector Tabs -->
+      <div class="mb-6">
+        <label class="block text-[11px] uppercase tracking-wider text-zinc-400 mb-2 font-mono">Select Staff Access Role</label>
+        <div class="grid grid-cols-3 gap-2 p-1 bg-black/60 rounded-xl border border-zinc-800 text-xs">
+          <button type="button" onclick="setRole('manager')" id="btn-manager" class="role-btn py-2 rounded-lg font-medium transition text-black bg-brand-gold">
+            Manager
+          </button>
+          <button type="button" onclick="setRole('cashier')" id="btn-cashier" class="role-btn py-2 rounded-lg font-medium transition text-zinc-400 hover:text-white">
+            Cashier
+          </button>
+          <button type="button" onclick="setRole('inventory')" id="btn-inventory" class="role-btn py-2 rounded-lg font-medium transition text-zinc-400 hover:text-white">
+            Stock
+          </button>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="staffLoginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs uppercase tracking-wider text-zinc-300 font-medium mb-1.5">Staff ID or Email</label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">👤</span>
+            <input type="text" id="staffId" required value="admin" class="w-full pl-10 pr-4 py-3 bg-black/50 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-brand-gold text-zinc-100 font-mono" />
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="block text-xs uppercase tracking-wider text-zinc-300 font-medium">Security Key / PIN</label>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">🔑</span>
+            <input type="password" id="staffPass" required value="1234" class="w-full pl-10 pr-10 py-3 bg-black/50 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-brand-gold text-zinc-100 font-mono" />
+            <button type="button" onclick="togglePassVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-brand-gold via-yellow-500 to-brand-darkgold hover:brightness-110 text-black font-bold text-sm tracking-widest uppercase transition shadow-[0_0_25px_rgba(212,175,55,0.3)] flex items-center justify-center gap-2">
+          <span>Authorize Access</span>
+          <span>→</span>
+        </button>
+      </form>
+
+      <div id="feedbackMsg" class="mt-4 hidden p-3 rounded-xl text-xs font-mono text-center border"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentRole = 'manager';
+
+    function setRole(role) {
+      currentRole = role;
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-gold', 'text-black');
+        btn.classList.add('text-zinc-400');
+      });
+      const activeBtn = document.getElementById(`btn-${role}`);
+      activeBtn.classList.add('bg-brand-gold', 'text-black');
+      activeBtn.classList.remove('text-zinc-400');
+    }
+
+    function togglePassVisibility() {
+      const pass = document.getElementById('staffPass');
+      pass.type = pass.type === 'password' ? 'text' : 'password';
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const pass = document.getElementById('staffPass').value.trim();
+      const card = document.getElementById('loginCard');
+      const msg = document.getElementById('feedbackMsg');
+      const btn = document.getElementById('submitBtn');
+
+      if (pass === '1234') {
+        btn.disabled = true;
+        msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 block";
+        msg.innerHTML = `✓ ACCESS GRANTED! Loading <strong>${currentRole.toUpperCase()}</strong> Terminal...`;
+
+        setTimeout(() => {
+          if (currentRole === 'manager') {
+            // Open Manager Control Panel in separate HTML file
+            window.location.href = 'manager-dashboard.html';
+          } else {
+            // Open Cashier / Stock POS Terminal
+            window.location.href = 'cashier-pos.html';
+          }
+        }, 600);
+      } else {
+        card.classList.add('animate-shake');
+        setTimeout(() => card.classList.remove('animate-shake'), 400);
+        msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-rose-500/50 bg-rose-500/10 text-rose-400 block";
+        msg.innerHTML = `✕ ACCESS DENIED: Incorrect PIN (Use 1234).`;
+      }
+    }
+  </script>
+</body>
+</html>
