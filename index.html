@@ -108,41 +108,41 @@
       <div class="flex flex-col gap-2 md:hidden w-full">
         <!-- Top Row: Theme | Logo | Profile & Cart -->
         <div class="flex items-center justify-between w-full">
-          <!-- Left: Theme Toggle -->
-          <div class="w-1/4 flex justify-start">
-            <button id="themeToggleMobile" aria-label="Toggle Theme" class="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 shadow-sm shrink-0 transition">
-              <svg id="themeIconSunMobile" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-              <svg id="themeIconMoonMobile" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+          <!-- Left: Theme Toggle (Pink Circle Left) -->
+          <div class="flex shrink-0">
+            <button id="themeToggleMobile" aria-label="Toggle Theme" class="flex items-center justify-center w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 shadow-sm transition">
+              <svg id="themeIconSunMobile" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              <svg id="themeIconMoonMobile" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
           </div>
 
-          <!-- Center: Logo -->
-          <a href="#" class="w-2/4 flex justify-center shrink-0">
+          <!-- Center: Logo (Red Circle Center) -->
+          <a href="#" class="flex justify-center shrink-0 mx-auto">
             <img src="hat-transparent.png" onerror="this.src='logo.png'" alt="Logo" class="h-12 w-auto object-contain drop-shadow-[0_2px_8px_rgba(212,175,55,0.4)]" />
           </a>
 
-          <!-- Right: Profile & Cart -->
-          <div class="w-1/4 flex justify-end items-center gap-2 shrink-0">
+          <!-- Right: Profile & Cart (Pink Circle & Purple Box Right) -->
+          <div class="flex items-center gap-2 shrink-0">
             <div id="customerAuthContainerMobile" class="relative">
-              <button onclick="handleCustomerNavClick()" id="btnCustomerNavMobile" class="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-brand-gold shadow-sm transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+              <button onclick="handleCustomerNavClick()" id="btnCustomerNavMobile" class="flex items-center justify-center w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-brand-gold shadow-sm transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
               </button>
             </div>
-            <button onclick="toggleCart()" class="relative flex items-center justify-center gap-1 bg-gradient-to-r from-brand-gold via-yellow-500 to-brand-darkgold text-black px-2.5 py-1.5 rounded-full shadow-md transition hover:brightness-110 whitespace-nowrap">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-              <span class="text-[11px] font-extrabold uppercase tracking-widest">Bag</span>
-              <span id="cartCountMobile" class="bg-black text-brand-gold text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold shadow-inner leading-none">0</span>
+            <button onclick="toggleCart()" class="relative flex items-center justify-center gap-1.5 bg-gradient-to-r from-brand-gold via-yellow-500 to-brand-darkgold text-black px-4 py-2.5 rounded-full shadow-md transition hover:brightness-110 whitespace-nowrap">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+              <span class="text-[11px] font-extrabold uppercase tracking-widest hidden xs:inline">Bag</span>
+              <span id="cartCountMobile" class="bg-black text-brand-gold text-xs px-2 py-0.5 rounded-full font-mono font-bold shadow-inner leading-none">0</span>
             </button>
           </div>
         </div>
 
-        <!-- Bottom Row: Brand Name & Tagline -->
+        <!-- Bottom Row: Brand Name & Tagline (Green Box Center) -->
         <a href="#" class="flex flex-col items-center justify-center w-full pt-1 pb-1">
           <div class="flex items-baseline tracking-wide">
-            <span class="font-display font-extrabold text-xl text-brand-gold drop-shadow-[0_2px_5px_rgba(212,175,55,0.3)]">THISARU</span>
+            <span class="font-display font-extrabold text-2xl text-brand-gold drop-shadow-[0_2px_5px_rgba(212,175,55,0.3)]">THISARU</span>
             <span class="ml-1.5 font-sans font-medium text-sm text-zinc-900 dark:text-white tracking-[0.2em] uppercase">FASHION</span>
           </div>
-          <span class="text-[8px] uppercase tracking-[0.3em] text-brand-darkgold dark:text-brand-gold/70 mt-0.5 font-medium">Colombo • Sri Lanka</span>
+          <span class="text-[9px] uppercase tracking-[0.3em] text-brand-darkgold dark:text-brand-gold/70 mt-0.5 font-medium">Colombo • Sri Lanka</span>
         </a>
       </div>
 
@@ -234,8 +234,8 @@
     </div>
   </section>
 
-  <!-- 4. DYNAMIC DATABASE PRODUCT CATALOG -->
-  <section id="drops" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 reveal">
+  <!-- 4. DYNAMIC DATABASE PRODUCT CATALOG (Reveal animation removed for seamless mobile scrolling) -->
+  <section id="drops" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 border-b border-brand-gold/20 pb-6">
       <div>
         <span class="text-brand-gold font-bold text-xs uppercase tracking-[0.2em]">Curated Collection</span>
@@ -1074,13 +1074,23 @@
     function updateCustomerNavUI() {
       const label = document.getElementById('navCustomerLabel');
       const btn = document.getElementById('btnCustomerNav');
+      const btnMobile = document.getElementById('btnCustomerNavMobile');
 
       if (activeCustomerSession) {
-        label.textContent = activeCustomerSession.name.split(' ')[0];
-        btn.className = "flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-brand-gold/15 border border-brand-gold text-brand-gold text-xs font-bold transition duration-300 shadow-sm";
+        const initial = activeCustomerSession.name.charAt(0).toUpperCase();
+        if (label) label.textContent = activeCustomerSession.name.split(' ')[0];
+        if (btn) btn.className = "flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-brand-gold/15 border border-brand-gold text-brand-gold text-xs font-bold transition duration-300 shadow-sm";
+        if (btnMobile) {
+            btnMobile.className = "flex items-center justify-center w-10 h-10 rounded-full bg-brand-gold border-2 border-brand-gold text-black font-extrabold text-sm shadow-sm transition";
+            btnMobile.innerHTML = initial; 
+        }
       } else {
-        label.textContent = "Sign In";
-        btn.className = "flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-zinc-200/80 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 hover:border-brand-gold text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition duration-300 shadow-sm";
+        if (label) label.textContent = "Sign In";
+        if (btn) btn.className = "flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-zinc-200/80 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 hover:border-brand-gold text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition duration-300 shadow-sm";
+        if (btnMobile) {
+            btnMobile.className = "flex items-center justify-center w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-brand-gold shadow-sm transition";
+            btnMobile.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`;
+        }
       }
     }
 
