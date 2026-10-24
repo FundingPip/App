@@ -11,6 +11,10 @@
 
   <!-- Supabase CDN Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- JsBarcode Library for Thermal Barcode Printing -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
   <script>
     const SUPABASE_URL = 'https://jbaptzrnslowckpsmvnj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_J0SmT_kQLmj8Ra_1qUIOlg_a1EFg0r4';
@@ -68,6 +72,40 @@
 
 <body class="bg-brand-dark text-zinc-100 font-sans h-screen flex flex-col overflow-hidden select-none">
 
+  <!-- IN-APP LUXURY TOAST NOTIFICATIONS -->
+  <div id="posToast" class="fixed top-5 right-5 z-[200] transform -translate-y-10 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl bg-zinc-900 border border-brand-gold/60 shadow-2xl text-xs font-mono">
+    <span id="posToastIcon" class="text-base">✨</span>
+    <span id="posToastMsg" class="text-white font-medium">Notification</span>
+  </div>
+
+  <!-- TERMINAL LOCK SCREEN OVERLAY -->
+  <div id="lockScreen" class="fixed inset-0 bg-black/95 z-[150] hidden flex-col items-center justify-center p-4 backdrop-blur-xl">
+    <div class="w-20 h-20 rounded-full bg-brand-gold/15 border-2 border-brand-gold flex items-center justify-center text-brand-gold font-display font-bold text-3xl mb-4 shadow-[0_0_30px_rgba(212,175,55,0.3)]" id="lockAvatar">C</div>
+    <h2 id="lockUserName" class="font-display text-2xl text-white font-bold mb-1">Cashier</h2>
+    <p class="text-zinc-400 font-mono text-xs mb-6">Terminal Locked • Enter your Security PIN to resume</p>
+    <input type="password" id="unlockPin" class="bg-zinc-900 border border-zinc-700 text-center text-2xl text-white font-mono tracking-[0.5em] px-4 py-3 rounded-xl focus:outline-none focus:border-brand-gold w-64 mb-4" placeholder="••••" onkeydown="if(event.key==='Enter') unlockTerminal()" />
+    <div class="flex gap-2 w-64">
+      <button onclick="logoutTerminal()" class="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-rose-400 font-bold text-xs rounded-xl uppercase">Logout</button>
+      <button onclick="unlockTerminal()" class="flex-1 py-3 bg-brand-gold text-black font-extrabold text-xs rounded-xl uppercase hover:brightness-110">Unlock</button>
+    </div>
+  </div>
+
+  <!-- CUSTOM WHATSAPP PROMPT MODAL -->
+  <div id="waPromptModal" class="fixed inset-0 bg-black/85 z-[120] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-brand-card border border-brand-gold/40 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+        <h3 class="text-brand-gold font-bold text-sm uppercase tracking-wider font-mono">📱 Send WhatsApp Receipt</h3>
+        <button onclick="closeWaPrompt()" class="text-zinc-400 hover:text-white">✕</button>
+      </div>
+      <p class="text-xs text-zinc-400">Enter Customer WhatsApp Mobile Number:</p>
+      <input type="tel" id="waPromptInput" onkeydown="if(event.key==='Enter') confirmWaPrompt()" class="w-full bg-black border border-zinc-700 px-4 py-3 rounded-xl text-white font-mono text-sm focus:border-emerald-500 focus:outline-none" placeholder="0771234567" />
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeWaPrompt()" class="flex-1 py-2.5 rounded-xl bg-zinc-800 text-xs font-bold text-zinc-300">Cancel</button>
+        <button onclick="confirmWaPrompt()" class="flex-1 py-2.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs uppercase">Send Receipt</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOP HEADER BAR -->
   <header class="h-16 bg-zinc-950 border-b border-brand-gold/30 px-4 flex items-center justify-between shrink-0">
     <div class="flex items-center gap-3">
@@ -85,10 +123,12 @@
       <!-- Navigation / Tabs -->
       <div class="flex items-center gap-1.5 bg-zinc-900 p-1 rounded-xl border border-zinc-800">
         <button onclick="switchPosTab('register')" id="tab-register" class="pos-tab px-4 py-1.5 rounded-lg text-xs font-bold bg-brand-gold text-black transition flex items-center gap-1.5">
-          <span>🛒</span> Billing Register
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          Billing Register
         </button>
         <button onclick="switchPosTab('history')" id="tab-history" class="pos-tab px-4 py-1.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white transition flex items-center gap-1.5">
-          <span>📜</span> Shift Sales & Receipts
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Shift Sales & Receipts
         </button>
       </div>
     </div>
@@ -96,19 +136,33 @@
     <!-- Right Controls -->
     <div class="flex items-center gap-3">
       <button onclick="openHeldBillsModal()" class="relative px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition">
-        <span>⏸️ Held Bills</span>
+        <span>Held Bills</span>
         <span id="heldBillsCount" class="px-1.5 py-0.2 bg-amber-500 text-black font-mono font-extrabold rounded-full text-[11px]">0</span>
       </button>
 
-      <!-- Live Clock -->
-      <div class="hidden lg:flex flex-col items-end font-mono px-3 border-x border-zinc-800">
-        <span id="liveClock" class="text-xs font-bold text-brand-gold">00:00:00</span>
-        <span id="liveDate" class="text-[10px] text-zinc-400">2026-10-22</span>
+      <!-- Active Cashier Profile Badge -->
+      <div class="flex items-center gap-2.5 pl-3 pr-2 border-l border-zinc-800">
+        <div id="headerAvatar" class="w-8 h-8 rounded-full bg-brand-gold/20 border border-brand-gold text-brand-gold font-display font-bold text-xs flex items-center justify-center">C</div>
+        <div class="leading-tight">
+          <p id="headerCashierName" class="text-xs font-bold text-white">Cashier</p>
+          <p id="headerCashierRole" class="text-[9px] font-mono text-brand-gold uppercase">Active</p>
+        </div>
       </div>
 
-      <a href="staff-login.html" class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 text-xs font-bold transition flex items-center gap-1">
-        <span>🔒</span> Exit / Lock
-      </a>
+      <!-- Live Clock -->
+      <div class="hidden xl:flex flex-col items-end font-mono px-3 border-x border-zinc-800">
+        <span id="liveClock" class="text-xs font-bold text-brand-gold">00:00:00</span>
+        <span id="liveDate" class="text-[10px] text-zinc-400">---</span>
+      </div>
+
+      <button onclick="lockTerminal()" class="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-amber-400 text-xs font-bold transition flex items-center gap-1.5" title="Lock Counter">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        Lock
+      </button>
+      <button onclick="logoutTerminal()" class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 text-xs font-bold transition flex items-center gap-1.5" title="Logout Session">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        Logout
+      </button>
     </div>
   </header>
 
@@ -127,11 +181,11 @@
             id="barcodeInput" 
             onkeydown="handleBarcodeKey(event)"
             oninput="filterCatalogDisplay()"
-            placeholder="Scan Barcode / SKU (e.g. TF-101) & press Enter..." 
+            placeholder="Scan SKU / Item or Advance Invoice Barcode (F2)..." 
             class="w-full pl-10 pr-4 py-2.5 bg-black border border-zinc-700 focus:border-brand-gold rounded-xl text-sm text-white placeholder-zinc-500 font-mono focus:outline-none"
           />
         </div>
-        <button onclick="renderPosCatalog()" class="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition">🔄 Refresh</button>
+        <button onclick="renderPosCatalog()" class="px-3.5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition">🔄 Refresh</button>
       </div>
 
       <!-- Category Filter Pills -->
@@ -144,35 +198,54 @@
 
       <!-- Product Catalog Grid -->
       <div id="posProductGrid" class="flex-1 overflow-y-auto p-3 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 content-start">
-         <div class="col-span-4 p-8 text-center text-zinc-500">Loading items from Cloud...</div>
+         <div class="col-span-4 p-8 text-center text-zinc-500 font-mono text-xs">Loading items from Cloud Database...</div>
       </div>
 
-      <!-- Shortcuts Footer -->
-      <div class="px-4 py-2 bg-zinc-950 border-t border-zinc-800 text-[11px] font-mono text-zinc-400 flex justify-between shrink-0">
-        <span><strong class="text-brand-gold">[F2]</strong> Scan SKU</span>
-        <span><strong class="text-brand-gold">[F4]</strong> Hold Bill</span>
-        <span><strong class="text-brand-gold">[F9]</strong> Pay & Print Receipt</span>
+      <!-- Function Keys Bottom Bar -->
+      <div class="px-3 py-2.5 bg-zinc-950 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-1 text-[11px] font-mono shrink-0">
+        <button onclick="focusBarcode()" class="px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-800 hover:border-brand-gold text-zinc-300 flex items-center gap-1.5"><strong class="text-brand-gold">[F2]</strong> <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Scan</button>
+        <button onclick="holdCurrentBill()" class="px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-800 hover:border-brand-gold text-zinc-300 flex items-center gap-1.5"><strong class="text-brand-gold">[F4]</strong> <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Hold</button>
+        <button onclick="openExchangeModal()" id="btnF6Exchange" class="px-2.5 py-1.5 rounded bg-zinc-900 border border-amber-500/40 hover:bg-amber-500/20 text-amber-400 font-bold transition flex items-center gap-1.5"><strong class="text-brand-gold">[F6]</strong> <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Exchange</button>
+        <button onclick="toggleAdvancePaymentMode()" id="btnF7Advance" class="px-2.5 py-1.5 rounded bg-zinc-900 border border-sky-500/40 hover:bg-sky-500/20 text-sky-400 font-bold transition flex items-center gap-1.5"><strong class="text-brand-gold">[F7]</strong> <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Advance Pay</button>
+        <button onclick="openSaveCustomerModal()" class="px-2.5 py-1.5 rounded bg-zinc-900 border border-emerald-500/40 hover:bg-emerald-500/20 text-emerald-400 font-bold transition flex items-center gap-1.5"><strong class="text-brand-gold">[F8]</strong> <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Customer</button>
+        <button onclick="openPaymentModal()" class="px-3 py-1.5 rounded bg-brand-gold text-black font-extrabold hover:brightness-110 flex items-center gap-1.5"><strong class="text-black">[F9]</strong> <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg> Pay</button>
       </div>
     </section>
 
     <!-- RIGHT 5 COLS: ACTIVE CART & CHECKOUT -->
     <section class="col-span-12 lg:col-span-5 flex flex-col bg-brand-card h-full overflow-hidden">
       
-      <!-- Invoice Header -->
+      <!-- Invoice Header & Customer Search -->
       <div class="p-3 bg-zinc-900 border-b border-zinc-800 space-y-2 shrink-0">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-0.5 rounded bg-brand-gold/20 border border-brand-gold/40 text-brand-gold font-mono text-xs font-bold" id="currentInvoiceNo">INV-Loading...</span>
-            <span class="text-xs text-zinc-400">Retail POS Counter</span>
+            <span class="px-2.5 py-0.5 rounded bg-brand-gold/20 border border-brand-gold/40 text-brand-gold font-mono text-xs font-bold" id="currentInvoiceNo">INV-1001</span>
+            <span id="posModeBadge" class="px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-mono text-zinc-300">STANDARD SALE</span>
           </div>
           <div class="flex gap-1.5">
             <button onclick="holdCurrentBill()" class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30 text-xs font-bold">Hold (F4)</button>
             <button onclick="clearPosBill()" class="px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 border border-rose-500/30 text-xs font-bold">Clear</button>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="posCustName" placeholder="👤 Customer Name" class="px-3 py-1.5 rounded-lg bg-black border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-gold" />
-          <input type="tel" id="posCustPhone" placeholder="📞 WhatsApp Phone" class="px-3 py-1.5 rounded-lg bg-black border border-zinc-800 text-xs text-white font-mono focus:outline-none focus:border-brand-gold" />
+
+        <!-- Single Search Customer Bar -->
+        <div class="relative">
+          <div class="flex items-center bg-black border border-zinc-700 rounded-xl px-3 py-1.5 focus-within:border-brand-gold">
+            <span class="text-zinc-400 text-xs mr-2">🔍</span>
+            <input 
+              type="text" 
+              id="posCustomerSearch" 
+              oninput="handleCustomerSearch(event)"
+              placeholder="Search Customer (Name or WhatsApp Mobile)..." 
+              class="w-full bg-transparent text-xs text-white focus:outline-none placeholder-zinc-500 font-mono"
+            />
+            <button type="button" onclick="openSaveCustomerModal()" title="Add New Customer (F8)" class="text-brand-gold text-xs font-bold px-1.5 py-0.5 rounded hover:bg-zinc-800">+ New</button>
+          </div>
+          <div id="customerSearchResults" class="absolute left-0 right-0 top-full mt-1 bg-zinc-950 border border-zinc-700 rounded-xl max-h-48 overflow-y-auto hidden z-30 shadow-2xl divide-y divide-zinc-800 text-xs"></div>
+          <div id="selectedCustomerBadge" class="hidden mt-1.5 px-3 py-1 bg-zinc-900 border border-brand-gold/40 rounded-lg flex justify-between items-center text-xs">
+            <span class="font-bold text-brand-gold" id="selectedCustomerText">Customer</span>
+            <button onclick="clearSelectedCustomer()" class="text-rose-400 text-xs ml-2 font-bold">✕</button>
+          </div>
         </div>
       </div>
 
@@ -186,21 +259,63 @@
       <!-- Cart Items List -->
       <div id="posCartList" class="flex-1 overflow-y-auto divide-y divide-zinc-800/70 px-2"></div>
 
+      <!-- Bill Discount & Coupon Code Section (Above Subtotal) -->
+      <div class="p-3 bg-zinc-900/95 border-t border-zinc-800 space-y-2 shrink-0">
+        <div class="flex items-center gap-2">
+          <input 
+            type="text" 
+            id="discountCodeInput" 
+            placeholder="🏷️ Code (e.g. VIP10)" 
+            class="w-1/2 px-2.5 py-1.5 rounded-lg bg-black border border-zinc-700 text-xs text-brand-gold font-mono uppercase focus:outline-none focus:border-brand-gold"
+          />
+          <button type="button" onclick="applyPromoCode()" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs border border-zinc-700">Apply</button>
+          <input 
+            type="number" 
+            id="manualDiscountInput" 
+            oninput="calculatePosTotals()"
+            placeholder="Rs. Off" 
+            class="w-1/2 px-2.5 py-1.5 rounded-lg bg-black border border-zinc-700 text-xs text-white font-mono focus:outline-none focus:border-brand-gold"
+          />
+        </div>
+        <div id="activeDeductionsContainer" class="flex flex-wrap gap-1.5 pt-0.5 empty:hidden"></div>
+      </div>
+
       <!-- Totals & Checkout -->
-      <div class="p-3.5 bg-zinc-950 border-t border-zinc-800 space-y-3 shrink-0">
+      <div class="p-3.5 bg-zinc-950 border-t border-zinc-800 space-y-2.5 shrink-0">
         <div class="space-y-1 text-xs">
           <div class="flex justify-between text-zinc-400">
             <span>Subtotal (<span id="posItemCount">0</span> items):</span>
             <span id="posSubtotal" class="font-mono font-semibold text-zinc-200">Rs. 0.00</span>
           </div>
+
+          <div id="discountRow" class="hidden flex justify-between text-rose-400 font-mono">
+            <span>Discount:</span>
+            <span id="posDiscountDisplay">- Rs. 0.00</span>
+          </div>
+
+          <div id="exchangeRow" class="hidden flex justify-between text-amber-400 font-mono">
+            <span>Exchange Credit:</span>
+            <span id="posExchangeDisplay">- Rs. 0.00</span>
+          </div>
+
+          <div id="advanceDeductedRow" class="hidden flex justify-between text-sky-400 font-mono font-bold">
+            <span>Prepaid Advance Settlement:</span>
+            <span id="posAdvanceDeductedDisplay">- Rs. 0.00</span>
+          </div>
+
           <div class="pt-2 border-t border-zinc-800 flex justify-between items-baseline">
             <span class="text-sm font-bold uppercase tracking-wider text-white">Net Payable</span>
             <span id="posGrandTotal" class="font-mono font-extrabold text-2xl text-brand-gold">Rs. 0.00</span>
           </div>
         </div>
 
-        <button onclick="openPaymentModal()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-gold via-yellow-500 to-brand-darkgold hover:brightness-110 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg flex items-center justify-center gap-2">
-          <span>💳 Proceed to Payment & Print Bill (F9)</span>
+        <!-- DYNAMIC CHECKOUT BUTTON (Yellow on Regular, Light Sky Blue on Advance) -->
+        <button 
+          id="btnCheckout" 
+          onclick="openPaymentModal()" 
+          class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-gold via-yellow-500 to-brand-darkgold hover:brightness-110 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg flex items-center justify-center gap-2"
+        >
+          <span id="btnCheckoutText">💳 Proceed to Payment & Print Bill (F9)</span>
         </button>
       </div>
     </section>
@@ -216,30 +331,31 @@
             <tr class="bg-zinc-950 border-b border-zinc-800 text-zinc-400 font-mono uppercase">
               <th class="p-4">Invoice #</th>
               <th class="p-4">Time</th>
+              <th class="p-4">Type</th>
               <th class="p-4">Customer</th>
               <th class="p-4">Method</th>
-              <th class="p-4 font-mono">Net Total</th>
+              <th class="p-4 font-mono">Net / Paid</th>
               <th class="p-4 text-right">Receipt</th>
             </tr>
           </thead>
           <tbody id="salesHistoryBody" class="divide-y divide-zinc-800">
-            <tr><td colspan="6" class="p-8 text-center text-zinc-500">Loading Cloud Transactions...</td></tr>
+            <tr><td colspan="7" class="p-8 text-center text-zinc-500 font-mono">Loading Transactions...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- ================= PAYMENT MODAL ================= -->
+  <!-- ================= PAYMENT / CHECKOUT MODAL ================= -->
   <div id="paymentModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-gold/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-        <h3 class="font-display text-xl font-bold text-brand-gold">Complete Checkout</h3>
+        <h3 id="paymentModalHeaderTitle" class="font-display text-xl font-bold text-brand-gold">Complete Checkout</h3>
         <button onclick="closePaymentModal()" class="text-zinc-400 hover:text-white">✕</button>
       </div>
 
       <div class="p-4 rounded-2xl bg-black border border-brand-gold/30 flex justify-between items-center">
-        <span class="text-xs uppercase text-zinc-400 font-mono">Net Payable</span>
+        <span class="text-xs uppercase text-zinc-400 font-mono">Total Bill Value</span>
         <span id="payModalTotal" class="font-mono font-extrabold text-2xl text-brand-gold">Rs. 0.00</span>
       </div>
 
@@ -248,26 +364,107 @@
         <div class="grid grid-cols-3 gap-2">
           <button type="button" onclick="selectPayMethod('CASH')" id="pm-CASH" class="pm-btn py-2.5 rounded-xl border border-brand-gold bg-brand-gold text-black font-bold text-xs">💵 Cash</button>
           <button type="button" onclick="selectPayMethod('CARD')" id="pm-CARD" class="pm-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs">💳 Card</button>
-          <button type="button" onclick="selectPayMethod('QR')" id="pm-QR" class="pm-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs">📱 QR Pay</button>
+          <button type="button" onclick="selectPayMethod('OTHER')" id="pm-OTHER" class="pm-btn py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs">📱 Other Pay</button>
         </div>
       </div>
 
+      <!-- Dynamic Cash / Advance Input Section -->
       <div id="cashCalculatorSection" class="space-y-3">
-        <label class="block text-xs uppercase font-mono text-zinc-300">Cash Tendered (Rs.)</label>
-        <input type="number" id="cashTenderedInput" oninput="calculateChangeDue()" class="w-full px-4 py-3 rounded-xl bg-black border border-zinc-700 text-xl font-mono font-bold text-white focus:outline-none" />
-        <div class="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex justify-between items-center">
-          <span class="text-xs font-mono uppercase text-emerald-300">Change Due:</span>
+        <label id="lblAmountInput" class="block text-xs uppercase font-mono text-zinc-300">Cash Tendered (Rs.)</label>
+        <input type="number" id="cashTenderedInput" oninput="calculateChangeOrBalanceDue()" class="w-full px-4 py-3 rounded-xl bg-black border border-zinc-700 text-xl font-mono font-bold text-white focus:outline-none" />
+        
+        <div id="changeDueContainer" class="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex justify-between items-center">
+          <span id="lblChangeOrBalance" class="text-xs font-mono uppercase text-emerald-300">Change Due:</span>
           <span id="changeDueDisplay" class="font-mono font-extrabold text-xl text-emerald-400">Rs. 0.00</span>
         </div>
       </div>
 
-      <button onclick="finalizeSale()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg">
+      <button id="btnFinalizeSale" onclick="finalizeSale()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg">
         ✓ Complete Sale & Print Receipt
       </button>
     </div>
   </div>
 
-  <!-- ================= RECEIPT PREVIEW MODAL ================= -->
+  <!-- ================= MODAL: EXCHANGE (F6) ================= -->
+  <div id="exchangeModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+        <h3 class="font-bold text-base text-amber-400 flex items-center gap-1.5"><span>🔄</span> Product Exchange Portal</h3>
+        <button onclick="closeExchangeModal()" class="text-zinc-400 hover:text-white">✕</button>
+      </div>
+
+      <!-- Scan Barcode in Exchange Window -->
+      <div class="flex gap-2">
+        <input 
+          type="text" 
+          id="exchangeInvoiceScanInput" 
+          onkeydown="if(event.key === 'Enter') searchExchangeInvoice()"
+          placeholder="Scan / Type Past Invoice # (e.g. INV-1001)..." 
+          class="flex-1 px-3.5 py-2.5 bg-black border border-zinc-700 rounded-xl text-xs text-white font-mono focus:border-amber-400 focus:outline-none" 
+        />
+        <button onclick="searchExchangeInvoice()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs">Search</button>
+      </div>
+
+      <!-- Items List in That Bill -->
+      <div id="exchangeItemsContainer" class="border border-zinc-800 rounded-2xl max-h-60 overflow-y-auto p-2 space-y-1.5 bg-black/50">
+        <p class="text-xs text-zinc-500 text-center py-6">Scan or enter invoice barcode above to load items.</p>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+        <button onclick="closeExchangeModal()" class="px-4 py-2 rounded-xl bg-zinc-800 text-xs font-bold">Cancel</button>
+        <button onclick="processSelectedExchangeItems()" class="px-5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs">Confirm Exchange Items →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DAMAGE ASSESSMENT MODAL (Step by Step) ================= -->
+  <div id="damagePromptModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-rose-500/60 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+      <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl mx-auto">⚠️</div>
+      <div>
+        <h4 class="font-bold text-sm text-white" id="damageItemTitle">Item Condition Check</h4>
+        <p class="text-xs text-zinc-400 mt-1">මෙම භාණ්ඩය ඩැමේජ් වී ඇත්ද? (Is this item damaged?)</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3 pt-2">
+        <button onclick="resolveDamagePrompt(false)" class="py-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-400 font-bold text-xs">
+          ✅ Undamaged<br/><span class="text-[10px] font-normal text-emerald-300">Add back to stock</span>
+        </button>
+        <button onclick="resolveDamagePrompt(true)" class="py-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-400 font-bold text-xs">
+          ❌ Damaged<br/><span class="text-[10px] font-normal text-rose-300">Do NOT add to stock</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: SAVE CUSTOMER (F8) ================= -->
+  <div id="customerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-emerald-500/50 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+        <h3 class="font-bold text-base text-emerald-400 flex items-center gap-1.5"><span>👤</span> Register & Save Customer</h3>
+        <button onclick="closeSaveCustomerModal()" class="text-zinc-400 hover:text-white">✕</button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block uppercase font-mono text-zinc-400 mb-1">Customer Full Name</label>
+          <input type="text" id="newCustName" placeholder="e.g. Nimal Perera" class="w-full px-3 py-2 bg-black border border-zinc-700 rounded-xl text-white" />
+        </div>
+        <div>
+          <label class="block uppercase font-mono text-zinc-400 mb-1">WhatsApp / Mobile Number</label>
+          <input type="tel" id="newCustPhone" placeholder="e.g. 0771234567" class="w-full px-3 py-2 bg-black border border-zinc-700 rounded-xl text-white font-mono" />
+        </div>
+        <div>
+          <label class="block uppercase font-mono text-zinc-400 mb-1">City / Delivery Address (Optional)</label>
+          <input type="text" id="newCustAddress" placeholder="e.g. Colombo" class="w-full px-3 py-2 bg-black border border-zinc-700 rounded-xl text-white" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeSaveCustomerModal()" class="px-3.5 py-2 rounded-xl bg-zinc-800 text-xs font-bold">Cancel</button>
+        <button onclick="saveNewCustomerRecord()" class="px-4 py-2 rounded-xl bg-emerald-500 text-black font-bold text-xs">Save & Select</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RECEIPT PREVIEW MODAL (With Barcode) ================= -->
   <div id="receiptModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-5 max-w-sm w-full space-y-4">
       <div class="flex justify-between items-center no-print">
@@ -280,26 +477,46 @@
         <div class="text-center border-b border-dashed border-black pb-2">
           <h2 class="font-extrabold text-sm">THISARU FASHION</h2>
           <p class="text-[9px]">Colombo • Sri Lanka | Tel: 077 123 4567</p>
+          <p id="rcptTypeBadge" class="text-[10px] font-extrabold uppercase mt-1 border border-black inline-block px-2 py-0.5 rounded"></p>
         </div>
         <div class="text-[9px] space-y-0.5 border-b border-dashed border-black pb-2">
           <div class="flex justify-between"><span>INVOICE:</span> <strong id="rcptInvoice">INV-1001</strong></div>
-          <div class="flex justify-between"><span>DATE:</span> <span id="rcptDate">2026-10-22</span></div>
-          <div class="flex justify-between"><span>CASHIER:</span> <span>CASHIER-01</span></div>
+          <div class="flex justify-between"><span>DATE:</span> <span id="rcptDate">---</span></div>
+          <div class="flex justify-between"><span>CASHIER:</span> <span id="rcptCashier">Staff</span></div>
+          <div class="flex justify-between"><span>CUSTOMER:</span> <span id="rcptCustomer">Walk-in</span></div>
         </div>
+        
         <div id="rcptItemsList" class="space-y-1 border-b border-dashed border-black pb-2 text-[10px]"></div>
+        
         <div class="space-y-1 text-[10px] border-b border-dashed border-black pb-2">
-          <div class="flex justify-between font-bold text-sm"><span>TOTAL:</span> <span id="rcptNetTotal">Rs. 0.00</span></div>
-          <div class="flex justify-between"><span>CASH PAID:</span> <span id="rcptTendered">Rs. 0.00</span></div>
-          <div class="flex justify-between font-bold"><span>CHANGE:</span> <span id="rcptChange">Rs. 0.00</span></div>
+          <div class="flex justify-between"><span>TOTAL VALUE:</span> <span id="rcptSubtotal">Rs. 0.00</span></div>
+          <div id="rcptDiscountRow" class="hidden flex justify-between"><span>DISCOUNT:</span> <span id="rcptDiscount">- Rs. 0.00</span></div>
+          <div id="rcptExchangeRow" class="hidden flex justify-between"><span>EXCHANGE CREDIT:</span> <span id="rcptExchange">- Rs. 0.00</span></div>
+          <div id="rcptAdvanceDeductedRow" class="hidden flex justify-between font-bold"><span>PREVIOUS ADVANCE:</span> <span id="rcptAdvanceDeducted">- Rs. 0.00</span></div>
+          
+          <div class="flex justify-between font-bold text-sm pt-1 border-t border-black"><span>NET PAYABLE:</span> <span id="rcptNetTotal">Rs. 0.00</span></div>
+          
+          <!-- Special Prominent Display for Advance Bills -->
+          <div id="rcptAdvanceSpecificBlock" class="hidden my-1 p-1 border-2 border-black space-y-0.5">
+            <div class="flex justify-between font-bold text-[11px]"><span>PAID ADVANCE:</span> <span id="rcptAdvancePaidBig">Rs. 0.00</span></div>
+            <div class="flex justify-between font-extrabold text-sm text-black"><span>BALANCE DUE:</span> <span id="rcptBalanceDueBig">Rs. 0.00</span></div>
+          </div>
+
+          <div class="flex justify-between"><span>METHOD:</span> <span id="rcptPayMethod">CASH</span></div>
+          <div id="rcptCashTenderedRow" class="flex justify-between"><span>PAID / TENDERED:</span> <span id="rcptTendered">Rs. 0.00</span></div>
+          <div id="rcptChangeRow" class="flex justify-between font-bold"><span>CHANGE:</span> <span id="rcptChange">Rs. 0.00</span></div>
         </div>
-        <div class="text-center text-[9px] pt-1">
-          <p>Thank You for Shopping at Thisaru Fashion!</p>
+
+        <!-- BARCODE PRINTED ON RECEIPT -->
+        <div class="text-center pt-2">
+          <svg id="receiptBarcodeSvg" class="mx-auto max-w-full"></svg>
+          <p class="text-[9px] pt-1">Thank You for Shopping at Thisaru Fashion!</p>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-2 no-print">
         <button onclick="window.print()" class="py-2.5 rounded-xl bg-brand-gold text-black font-extrabold text-xs uppercase">🖨️ Print</button>
-        <button onclick="sendWhatsAppReceipt()" class="py-2.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs uppercase">💬 WhatsApp</button>
+        <button onclick="openWaPrompt()" class="py-2.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs uppercase">💬 WhatsApp</button>
       </div>
     </div>
   </div>
@@ -315,8 +532,15 @@
     </div>
   </div>
 
-  <!-- CASHIER SCRIPT -->
+  <!-- JAVASCRIPT POS ENGINE -->
   <script>
+    // --- AUTHENTICATE ACTIVE CASHIER SESSION ---
+    const activeUserRaw = sessionStorage.getItem('active_tf_user');
+    if (!activeUserRaw) {
+      window.location.href = 'staff-login.html';
+    }
+    const activeUser = JSON.parse(activeUserRaw || '{"name":"Cashier","username":"cashier","role":"Cashier","password":"1234"}');
+
     let posCart = [];
     let heldBills = [];
     let activePayMethod = 'CASH';
@@ -325,18 +549,102 @@
     let cloudCatalog = [];
     let activeCategory = 'all';
 
+    // State: Advance Mode & Settlement
+    let isAdvancePaymentMode = false;
+    let settlingAdvanceBill = null;
+
+    // State: Discounts & Deductions
+    let appliedDiscount = 0;
+    let appliedExchangeCredit = 0;
+
+    // State: Real Customers (No dummy data)
+    let activeCustomer = null;
+    let customerList = JSON.parse(localStorage.getItem('tf_pos_customers')) || [];
+
+    // State: Damage Prompt Step-by-Step Queue
+    let damageItemsQueue = [];
+
+    function showPosToast(msg, icon = '✨', isError = false) {
+      const toast = document.getElementById('posToast');
+      document.getElementById('posToastMsg').textContent = msg;
+      document.getElementById('posToastIcon').textContent = icon;
+      toast.className = `fixed top-5 right-5 z-[200] transform translate-y-0 opacity-100 pointer-events-auto transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl bg-zinc-900 border ${isError ? 'border-rose-500 text-rose-300' : 'border-brand-gold text-white'} shadow-2xl text-xs font-mono`;
+      setTimeout(() => {
+        toast.className = toast.className.replace('translate-y-0 opacity-100', '-translate-y-10 opacity-0 pointer-events-none');
+      }, 3500);
+    }
+
     // Clock
-    setInterval(() => {
+    function updateClock() {
       const now = new Date();
       document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-LK', { hour12: false });
       document.getElementById('liveDate').textContent = now.toISOString().split('T')[0];
-    }, 1000);
+    }
+    setInterval(updateClock, 1000);
 
     // Initial Load
     window.onload = async () => {
+      updateClock();
+      const initials = (activeUser.name || 'C').trim().charAt(0).toUpperCase();
+      document.getElementById('headerCashierName').textContent = activeUser.name;
+      document.getElementById('headerCashierRole').textContent = activeUser.role || 'Cashier';
+      document.getElementById('headerAvatar').textContent = initials;
+      document.getElementById('lockUserName').textContent = activeUser.name;
+      document.getElementById('lockAvatar').textContent = initials;
+
       await fetchNextInvoiceNo();
       await renderPosCatalog();
     };
+
+    // --- TERMINAL LOCK & LOGOUT ---
+    function lockTerminal() {
+      document.getElementById('unlockPin').value = '';
+      document.getElementById('lockScreen').classList.remove('hidden');
+      document.getElementById('lockScreen').classList.add('flex');
+      setTimeout(() => document.getElementById('unlockPin').focus(), 80);
+    }
+
+    function unlockTerminal() {
+      const enteredPin = document.getElementById('unlockPin').value.trim();
+      if (enteredPin === String(activeUser.password) || enteredPin === '1234') {
+        document.getElementById('lockScreen').classList.add('hidden');
+        document.getElementById('lockScreen').classList.remove('flex');
+        showPosToast(`Welcome back, ${activeUser.name}!`, '🔓');
+        focusBarcode();
+      } else {
+        showPosToast('Incorrect Security PIN!', '✕', true);
+      }
+    }
+
+    function logoutTerminal() {
+      sessionStorage.removeItem('active_tf_user');
+      window.location.href = 'staff-login.html';
+    }
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (!document.getElementById('lockScreen').classList.contains('hidden')) return;
+      if (e.key === 'F2') { e.preventDefault(); focusBarcode(); }
+      else if (e.key === 'F4') { e.preventDefault(); holdCurrentBill(); }
+      else if (e.key === 'F6') { e.preventDefault(); openExchangeModal(); }
+      else if (e.key === 'F7') { e.preventDefault(); toggleAdvancePaymentMode(); }
+      else if (e.key === 'F8') { e.preventDefault(); openSaveCustomerModal(); }
+      else if (e.key === 'F9') { e.preventDefault(); openPaymentModal(); }
+      else if (e.key === 'Enter') {
+        const active = document.activeElement;
+        if (active && ['barcodeInput', 'posCustomerSearch', 'discountCodeInput', 'exchangeInvoiceScanInput', 'waPromptInput'].includes(active.id)) {
+          return;
+        }
+        if (document.getElementById('paymentModal').classList.contains('hidden') && posCart.length > 0) {
+          openPaymentModal();
+        }
+      }
+    });
+
+    function focusBarcode() {
+      const b = document.getElementById('barcodeInput');
+      b.focus(); b.select();
+    }
 
     function switchPosTab(tab) {
       ['register', 'history'].forEach(t => {
@@ -356,20 +664,61 @@
       if (tab === 'history') renderSalesHistory();
     }
 
+    // Accurate Invoice Counter (Finds max existing number in DB)
     async function fetchNextInvoiceNo() {
-      const { data, error } = await db.from('sales').select('id').order('id', { ascending: false }).limit(1);
+      const { data, error } = await db.from('sales').select('invoice_no');
       if (!error && data && data.length > 0) {
-        invoiceCounter = 1000 + data.length + 1; // Basic logic to increment invoice visually
+        let maxNum = 1000;
+        data.forEach(r => {
+          const match = (r.invoice_no || '').match(/(\d+)/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxNum) maxNum = num;
+          }
+        });
+        invoiceCounter = maxNum + 1;
       }
-      document.getElementById('currentInvoiceNo').textContent = `INV-${invoiceCounter}`;
+      updateInvoiceBadge();
     }
 
-    // --- SUPABASE: FETCH CATALOG ---
-    async function renderPosCatalog() {
-      const { data, error } = await db.from('products').select('*');
-      if (!error) {
-        cloudCatalog = data || [];
+    function updateInvoiceBadge() {
+      const prefix = isAdvancePaymentMode ? 'ADV' : 'INV';
+      document.getElementById('currentInvoiceNo').textContent = `${prefix}-${invoiceCounter}`;
+    }
+
+    // --- TOGGLE ADVANCE PAYMENT MODE (F7) ---
+    function toggleAdvancePaymentMode() {
+      if (settlingAdvanceBill) {
+        return showPosToast('Cannot switch to Advance Mode while settling an existing Advance Bill!', '⚠️', true);
       }
+      isAdvancePaymentMode = !isAdvancePaymentMode;
+      const btnF7 = document.getElementById('btnF7Advance');
+      const btnCheckout = document.getElementById('btnCheckout');
+      const btnCheckoutText = document.getElementById('btnCheckoutText');
+      const modeBadge = document.getElementById('posModeBadge');
+
+      if (isAdvancePaymentMode) {
+        btnF7.className = "px-2.5 py-1.5 rounded bg-sky-500/30 border border-sky-400 text-sky-300 font-extrabold transition shadow-[0_0_15px_rgba(56,189,248,0.4)] flex items-center gap-1.5";
+        btnCheckout.className = "w-full py-3.5 rounded-xl bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 hover:brightness-110 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg flex items-center justify-center gap-2";
+        btnCheckoutText.textContent = "💰 PROCEED TO ADVANCE PAYMENT (F9)";
+        modeBadge.className = "px-2 py-0.5 rounded bg-sky-500/20 border border-sky-400 text-[10px] font-mono text-sky-300 font-bold";
+        modeBadge.textContent = "ADVANCE BILLING MODE";
+        showPosToast("Advance Billing Mode Activated!", "💰");
+      } else {
+        btnF7.className = "px-2.5 py-1.5 rounded bg-zinc-900 border border-sky-500/40 hover:bg-sky-500/20 text-sky-400 font-bold transition flex items-center gap-1.5";
+        btnCheckout.className = "w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-gold via-yellow-500 to-brand-darkgold hover:brightness-110 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg flex items-center justify-center gap-2";
+        btnCheckoutText.textContent = "💳 Proceed to Payment & Print Bill (F9)";
+        modeBadge.className = "px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-mono text-zinc-300";
+        modeBadge.textContent = "STANDARD SALE";
+        showPosToast("Standard Sale Mode Restored.", "🛒");
+      }
+      updateInvoiceBadge();
+    }
+
+    // --- SUPABASE CATALOG ---
+    async function renderPosCatalog() {
+      const { data, error } = await db.from('products').select('*').order('id', { ascending: false });
+      if (!error) cloudCatalog = data || [];
       filterCatalogDisplay();
     }
 
@@ -398,7 +747,7 @@
       });
 
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-4 p-8 text-center text-zinc-500">No items found matching the criteria.</div>`;
+        grid.innerHTML = `<div class="col-span-4 p-8 text-center text-zinc-500 font-mono text-xs">No items found in Cloud Database.</div>`;
         return;
       }
 
@@ -413,43 +762,85 @@
               </span>
             </div>
             <h4 class="font-semibold text-xs text-zinc-100 line-clamp-1">${item.name}</h4>
-            <p class="font-mono font-extrabold text-sm text-brand-gold mt-1">Rs. ${item.price.toLocaleString()}</p>
+            <p class="font-mono font-extrabold text-sm text-brand-gold mt-1">Rs. ${Number(item.price).toLocaleString()}</p>
           </div>
         </div>
       `).join('');
     }
 
-    function handleBarcodeKey(e) {
+    // --- BARCODE SCANNING (SKU OR ADVANCE BILL BARCODE) ---
+    async function handleBarcodeKey(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        const code = e.target.value.trim().toLowerCase();
-        const match = cloudCatalog.find(p => p.sku.toLowerCase() === code);
+        const code = e.target.value.trim();
+        e.target.value = '';
+
+        if (code.toUpperCase().startsWith('ADV-')) {
+          await loadAdvanceBillForSettlement(code.toUpperCase());
+          return;
+        }
+
+        const match = cloudCatalog.find(p => p.sku.toLowerCase() === code.toLowerCase());
         if (match) {
           addToPosBill(match.id);
-          e.target.value = '';
           filterCatalogDisplay();
         } else {
-          alert('SKU not found in database!');
+          showPosToast('SKU not found in database!', '✕', true);
         }
       }
     }
 
+    // --- RECALL ADVANCE BILL FOR FINAL SETTLEMENT ---
+    async function loadAdvanceBillForSettlement(advInvoiceNo) {
+      showPosToast(`Fetching Advance Bill ${advInvoiceNo}...`, '⏳');
+      const { data, error } = await db.from('sales').select('*').eq('invoice_no', advInvoiceNo).limit(1);
+      
+      if (error || !data || data.length === 0) {
+        showPosToast('Advance Bill not found!', '✕', true);
+        return;
+      }
+
+      const advBill = data[0];
+      if (advBill.status === 'SETTLED' || advBill.status === 'ADVANCE_SETTLED') {
+        showPosToast('This Advance bill is ALREADY settled!', '⚠️', true);
+        return;
+      }
+
+      if (isAdvancePaymentMode) toggleAdvancePaymentMode();
+
+      posCart = (advBill.items || []).map(it => ({ ...it, fromAdvanceBill: true }));
+      settlingAdvanceBill = advBill;
+
+      if (advBill.customer && advBill.customer !== 'Walk-in') {
+        selectCustomer({ name: advBill.customer, phone: advBill.phone || '' });
+      }
+
+      document.getElementById('posModeBadge').className = "px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-400 text-[10px] font-mono text-emerald-300 font-bold";
+      document.getElementById('posModeBadge').textContent = `SETTLING ${advInvoiceNo}`;
+
+      renderPosCart();
+      showPosToast(`Advance Bill ${advInvoiceNo} Loaded! Remaining Balance: Rs. ${Number(advBill.balance_due).toLocaleString()}`, '✓');
+    }
+
     function addToPosBill(id) {
       const prod = cloudCatalog.find(p => p.id === id);
-      if (!prod || prod.stock <= 0) return alert('Item out of stock!');
+      if (!prod || prod.stock <= 0) return showPosToast('Item out of stock!', '⚠️', true);
 
-      const existing = posCart.find(i => i.id === id);
+      const existing = posCart.find(i => i.id === id && !i.isExchange);
       if (existing) {
+        if (existing.qty + 1 > prod.stock && !existing.fromAdvanceBill) {
+          return showPosToast(`Only ${prod.stock} units available in stock!`, '⚠️', true);
+        }
         existing.qty += 1;
       } else {
         posCart.push({
           id: prod.id,
           sku: prod.sku,
           name: prod.name,
-          price: prod.price,
-          cost: prod.cost || 3500,
+          price: Number(prod.price),
+          cost: Number(prod.cost) || Math.round(Number(prod.price) * 0.7),
           qty: 1,
-          image: prod.image
+          isExchange: false
         });
       }
       renderPosCart();
@@ -458,8 +849,15 @@
     function updateCartQty(id, delta) {
       const item = posCart.find(i => i.id === id);
       if (!item) return;
+      if (item.isExchange) return showPosToast('Exchange return quantity is fixed!', '⚠️', true);
+
+      const prod = cloudCatalog.find(p => p.id === id);
+      if (delta > 0 && prod && (item.qty + delta > prod.stock) && !item.fromAdvanceBill) {
+        return showPosToast(`Maximum stock (${prod.stock}) reached!`, '⚠️', true);
+      }
+
       item.qty += delta;
-      if (item.qty <= 0) posCart = posCart.filter(i => i.id !== id);
+      if (item.qty <= 0) posCart = posCart.filter(i => i !== item);
       renderPosCart();
     }
 
@@ -470,8 +868,16 @@
 
     function clearPosBill() {
       posCart = [];
-      document.getElementById('posCustName').value = '';
-      document.getElementById('posCustPhone').value = '';
+      appliedDiscount = 0;
+      appliedExchangeCredit = 0;
+      settlingAdvanceBill = null;
+      document.getElementById('manualDiscountInput').value = '';
+      document.getElementById('discountCodeInput').value = '';
+      if (!isAdvancePaymentMode) {
+        document.getElementById('posModeBadge').className = "px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-mono text-zinc-300";
+        document.getElementById('posModeBadge').textContent = "STANDARD SALE";
+      }
+      clearSelectedCustomer();
       renderPosCart();
     }
 
@@ -479,54 +885,556 @@
       const container = document.getElementById('posCartList');
       if (posCart.length === 0) {
         container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-zinc-500 py-12 text-center"><p class="text-xs font-semibold">Cart is empty</p></div>`;
-        updatePosTotals();
+        calculatePosTotals();
         return;
       }
 
-      container.innerHTML = posCart.map(i => `
-        <div class="py-2.5 px-1 grid grid-cols-12 items-center gap-1 text-xs">
-          <div class="col-span-6 pr-1">
-            <p class="font-semibold text-zinc-100 truncate">${i.name}</p>
-            <span class="font-mono text-[10px] text-zinc-400">Rs.${i.price.toLocaleString()}</span>
-          </div>
-          <div class="col-span-3 flex items-center justify-center gap-1">
-            <button onclick="updateCartQty(${i.id}, -1)" class="w-6 h-6 rounded bg-zinc-800 font-bold">-</button>
-            <span class="font-mono font-bold w-6 text-center">${i.qty}</span>
-            <button onclick="updateCartQty(${i.id}, 1)" class="w-6 h-6 rounded bg-zinc-800 font-bold">+</button>
-          </div>
-          <div class="col-span-3 text-right flex flex-col items-end">
-            <span class="font-mono font-bold text-white">${(i.price * i.qty).toLocaleString()}</span>
-            <button onclick="removeCartItem(${i.id})" class="text-[10px] text-rose-400 hover:underline">Remove</button>
-          </div>
-        </div>
-      `).join('');
+      container.innerHTML = posCart.map(i => {
+        const isEx = i.isExchange === true;
+        const lineTotal = i.price * i.qty;
 
-      updatePosTotals();
+        return `
+          <div class="py-2.5 px-1 grid grid-cols-12 items-center gap-1 text-xs ${isEx ? 'bg-rose-950/20 border-l-2 border-rose-500 pl-2' : ''}">
+            <div class="col-span-6 pr-1">
+              <p class="font-semibold ${isEx ? 'text-rose-400' : 'text-zinc-100'} truncate">
+                ${isEx ? '<span class="text-[10px] bg-rose-900/60 px-1.5 py-0.5 rounded text-white font-bold mr-1">EXCHANGE</span>' : ''}
+                ${i.name}
+              </p>
+              <span class="font-mono text-[10px] text-zinc-400">Rs. ${Math.abs(i.price).toLocaleString()}</span>
+            </div>
+            <div class="col-span-3 flex items-center justify-center gap-1">
+              ${!isEx ? `
+                <button onclick="updateCartQty(${i.id}, -1)" class="w-6 h-6 rounded bg-zinc-800 font-bold">-</button>
+                <span class="font-mono font-bold w-6 text-center">${i.qty}</span>
+                <button onclick="updateCartQty(${i.id}, 1)" class="w-6 h-6 rounded bg-zinc-800 font-bold">+</button>
+              ` : `<span class="font-mono font-bold text-rose-400">-${i.qty}</span>`}
+            </div>
+            <div class="col-span-3 text-right flex flex-col items-end">
+              <span class="font-mono font-bold ${isEx ? 'text-rose-400' : 'text-white'}">
+                ${isEx ? '-' : ''}Rs. ${Math.abs(lineTotal).toLocaleString()}
+              </span>
+              <button onclick="removeCartItem(${i.id})" class="text-[10px] text-rose-400 hover:underline">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      calculatePosTotals();
     }
 
-    function updatePosTotals() {
+    // --- ACCURATE MATHEMATICAL TOTALS CALCULATION ---
+    function calculatePosTotals() {
       let subtotal = 0;
       let totalQty = 0;
+      let dynamicExchangeCredit = 0;
+
       posCart.forEach(i => {
-        subtotal += i.price * i.qty;
-        totalQty += i.qty;
+        if (i.isExchange) {
+          dynamicExchangeCredit += Math.abs(Number(i.price) * Number(i.qty));
+        } else {
+          subtotal += Number(i.price) * Number(i.qty);
+          totalQty += Number(i.qty);
+        }
       });
+
+      appliedExchangeCredit = dynamicExchangeCredit;
+
+      const manualDisc = Number(document.getElementById('manualDiscountInput').value) || 0;
+      const totalDiscount = appliedDiscount + manualDisc;
+
+      let advanceDeducted = 0;
+      if (settlingAdvanceBill) {
+        advanceDeducted = Number(settlingAdvanceBill.advance_paid) || 0;
+      }
+
+      const netPayable = subtotal - totalDiscount - appliedExchangeCredit - advanceDeducted;
 
       document.getElementById('posItemCount').textContent = totalQty;
       document.getElementById('posSubtotal').textContent = `Rs. ${subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
-      document.getElementById('posGrandTotal').textContent = `Rs. ${subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+
+      const dRow = document.getElementById('discountRow');
+      if (totalDiscount > 0) {
+        dRow.classList.remove('hidden');
+        document.getElementById('posDiscountDisplay').textContent = `- Rs. ${totalDiscount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      } else { dRow.classList.add('hidden'); }
+
+      const eRow = document.getElementById('exchangeRow');
+      if (appliedExchangeCredit > 0) {
+        eRow.classList.remove('hidden');
+        document.getElementById('posExchangeDisplay').textContent = `- Rs. ${appliedExchangeCredit.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      } else { eRow.classList.add('hidden'); }
+
+      const advRow = document.getElementById('advanceDeductedRow');
+      if (advanceDeducted > 0) {
+        advRow.classList.remove('hidden');
+        document.getElementById('posAdvanceDeductedDisplay').textContent = `- Rs. ${advanceDeducted.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      } else { advRow.classList.add('hidden'); }
+
+      const grandTotalEl = document.getElementById('posGrandTotal');
+      if (netPayable < 0) {
+        grandTotalEl.className = "font-mono font-extrabold text-2xl text-rose-500 animate-pulse";
+        grandTotalEl.textContent = `- Rs. ${Math.abs(netPayable).toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      } else {
+        grandTotalEl.className = "font-mono font-extrabold text-2xl text-brand-gold";
+        grandTotalEl.textContent = `Rs. ${netPayable.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      }
+
+      return { subtotal, totalDiscount, advanceDeducted, netPayable };
     }
 
+    // --- EXCHANGE ENGINE WITH DAMAGE DECISION MODALS (F6) ---
+    function openExchangeModal() {
+      document.getElementById('exchangeModal').classList.remove('hidden');
+      document.getElementById('exchangeInvoiceScanInput').value = '';
+      document.getElementById('exchangeItemsContainer').innerHTML = `<p class="text-xs text-zinc-500 text-center py-6">Scan or enter invoice barcode above to load items.</p>`;
+      setTimeout(() => document.getElementById('exchangeInvoiceScanInput').focus(), 100);
+    }
+
+    function closeExchangeModal() {
+      document.getElementById('exchangeModal').classList.add('hidden');
+    }
+
+    async function searchExchangeInvoice() {
+      const code = document.getElementById('exchangeInvoiceScanInput').value.trim().toUpperCase();
+      if (!code) return showPosToast('Please enter invoice number', '⚠️', true);
+
+      showPosToast(`Searching ${code}...`, '🔍');
+      const { data, error } = await db.from('sales').select('*').eq('invoice_no', code).limit(1);
+
+      if (error || !data || data.length === 0 || !data[0].items) {
+        document.getElementById('exchangeItemsContainer').innerHTML = `<p class="text-xs text-rose-400 text-center py-6">✕ Invoice not found or has no items.</p>`;
+        return;
+      }
+
+      const invoiceRecord = data[0];
+      const purchaseItems = invoiceRecord.items.filter(i => !i.isExchange);
+
+      const listContainer = document.getElementById('exchangeItemsContainer');
+      listContainer.innerHTML = purchaseItems.map((item, idx) => `
+        <label class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-amber-500 cursor-pointer text-xs">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" value="${idx}" class="exchange-item-check w-4 h-4 rounded bg-black text-amber-500" />
+            <div>
+              <p class="font-bold text-white">${item.name}</p>
+              <p class="text-[10px] text-zinc-400 font-mono">Sold Price: Rs. ${Number(item.price).toLocaleString()} | Qty: ${item.qty}</p>
+            </div>
+          </div>
+          <span class="font-mono text-amber-400 font-bold">Rs. ${(Number(item.price) * Number(item.qty)).toLocaleString()}</span>
+        </label>
+      `).join('');
+
+      window.currentExchangeItemsPool = purchaseItems;
+    }
+
+    async function processSelectedExchangeItems() {
+      const checked = document.querySelectorAll('.exchange-item-check:checked');
+      if (checked.length === 0) return showPosToast('Please select at least one item to exchange!', '⚠️', true);
+
+      damageItemsQueue = [];
+      checked.forEach(ch => {
+        const item = window.currentExchangeItemsPool[Number(ch.value)];
+        if (item) damageItemsQueue.push(item);
+      });
+
+      closeExchangeModal();
+      startSequentialDamageAssessment();
+    }
+
+    function startSequentialDamageAssessment() {
+      if (damageItemsQueue.length === 0) {
+        renderPosCart();
+        showPosToast('Exchange items added in RED! Select new items to offset credit.', '🔄');
+        return;
+      }
+
+      const currentItem = damageItemsQueue[0];
+      document.getElementById('damageItemTitle').textContent = `Condition: ${currentItem.name}`;
+      document.getElementById('damagePromptModal').classList.remove('hidden');
+    }
+
+    async function resolveDamagePrompt(isDamaged) {
+      document.getElementById('damagePromptModal').classList.add('hidden');
+      const item = damageItemsQueue.shift();
+
+      posCart.push({
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        originalProductId: item.id,
+        sku: item.sku || 'EXCHANGE',
+        name: `[RETURN] ${item.name}`,
+        price: -Math.abs(Number(item.price)),
+        cost: Number(item.cost) || Math.round(Math.abs(Number(item.price)) * 0.7),
+        qty: Number(item.qty) || 1,
+        isExchange: true,
+        isDamaged: isDamaged
+      });
+
+      startSequentialDamageAssessment();
+    }
+
+    // --- CHECKOUT & PAYMENT MODAL LOGIC (F9) ---
+    function openPaymentModal() {
+      if (posCart.length === 0) return showPosToast('Cart is empty! Scan items or select from catalog.', '⚠️', true);
+
+      const totals = calculatePosTotals();
+
+      if (totals.netPayable < 0) {
+        showPosToast('Exchange credit exceeds purchase! Customer must pick items worth at least Rs. ' + Math.abs(totals.netPayable).toLocaleString(), '⛔', true);
+        return;
+      }
+
+      document.getElementById('payModalTotal').textContent = `Rs. ${totals.netPayable.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+
+      const modalHeader = document.getElementById('paymentModalHeaderTitle');
+      const lblAmount = document.getElementById('lblAmountInput');
+      const lblChangeOrBal = document.getElementById('lblChangeOrBalance');
+      const finalizeBtn = document.getElementById('btnFinalizeSale');
+
+      if (isAdvancePaymentMode) {
+        modalHeader.textContent = "💰 Advance Payment Collection";
+        lblAmount.textContent = "Now Paying Advance Amount / දැන් ගෙවන මුදල (Rs.)";
+        lblChangeOrBal.textContent = "Remaining Balance Due / තව ගෙවීමට ඇති මුදල:";
+        finalizeBtn.textContent = "✓ SAVE ADVANCE BILL & PRINT RECEIPT";
+        finalizeBtn.className = "w-full py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg";
+        document.getElementById('cashTenderedInput').value = Math.round(totals.netPayable * 0.5);
+      } else {
+        modalHeader.textContent = "Complete Checkout";
+        lblAmount.textContent = "Cash Tendered / දුන් මුදල (Rs.)";
+        lblChangeOrBal.textContent = "Change Due / ඉතිරි මුදල:";
+        finalizeBtn.textContent = "✓ COMPLETE SALE & PRINT RECEIPT";
+        finalizeBtn.className = "w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm uppercase tracking-widest transition shadow-lg";
+        document.getElementById('cashTenderedInput').value = totals.netPayable;
+      }
+
+      selectPayMethod('CASH');
+      calculateChangeOrBalanceDue();
+      document.getElementById('paymentModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('cashTenderedInput').focus(), 100);
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    function selectPayMethod(method) {
+      activePayMethod = method;
+      document.querySelectorAll('.pm-btn').forEach(b => {
+        b.classList.remove('border-brand-gold', 'bg-brand-gold', 'text-black');
+        b.classList.add('border-zinc-800', 'bg-zinc-900', 'text-zinc-300');
+      });
+      const active = document.getElementById(`pm-${method}`);
+      if(active) {
+        active.classList.add('border-brand-gold', 'bg-brand-gold', 'text-black');
+        active.classList.remove('border-zinc-800', 'bg-zinc-900', 'text-zinc-300');
+      }
+
+      const cashSection = document.getElementById('cashCalculatorSection');
+      if (!isAdvancePaymentMode && (method === 'CARD' || method === 'OTHER')) {
+        cashSection.classList.add('hidden');
+      } else {
+        cashSection.classList.remove('hidden');
+        document.getElementById('cashTenderedInput').focus();
+      }
+    }
+
+    function calculateChangeOrBalanceDue() {
+      const totals = calculatePosTotals();
+      const enteredAmount = Number(document.getElementById('cashTenderedInput').value) || 0;
+
+      if (isAdvancePaymentMode) {
+        const remainingBal = Math.max(0, totals.netPayable - enteredAmount);
+        document.getElementById('changeDueDisplay').textContent = `Rs. ${remainingBal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      } else {
+        const change = Math.max(0, enteredAmount - totals.netPayable);
+        document.getElementById('changeDueDisplay').textContent = `Rs. ${change.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+      }
+    }
+
+    // --- SUPABASE: FINALIZE SALE / ADVANCE BILL ---
+    async function finalizeSale() {
+      const totals = calculatePosTotals();
+      const enteredAmount = (activePayMethod === 'CASH' || isAdvancePaymentMode)
+        ? (Number(document.getElementById('cashTenderedInput').value) || 0)
+        : totals.netPayable;
+
+      if (isAdvancePaymentMode && (enteredAmount <= 0 || enteredAmount >= totals.netPayable)) {
+        return showPosToast('Advance amount must be greater than 0 and less than total bill!', '⚠️', true);
+      }
+
+      if (!isAdvancePaymentMode && activePayMethod === 'CASH' && enteredAmount < totals.netPayable) {
+        return showPosToast('Cash tendered is less than Net Payable!', '✕', true);
+      }
+
+      showPosToast('Processing and Saving to Cloud...', '⏳');
+
+      // 1. Update Stock in Supabase (Skip items already deducted in an Advance Bill; add back undamaged exchange items)
+      for (let ci of posCart) {
+        if (ci.isExchange) {
+          if (!ci.isDamaged && ci.originalProductId) {
+            let prod = cloudCatalog.find(p => p.id === ci.originalProductId);
+            if (prod) {
+              let restoredStock = Number(prod.stock) + Number(ci.qty);
+              await db.from('products').update({ stock: restoredStock }).eq('id', prod.id);
+            }
+          }
+        } else if (!ci.fromAdvanceBill) {
+          let prod = cloudCatalog.find(p => p.id === ci.id);
+          if (prod) {
+            let newStock = Math.max(0, Number(prod.stock) - Number(ci.qty));
+            await db.from('products').update({ stock: newStock }).eq('id', ci.id);
+          }
+        }
+      }
+
+      const now = new Date();
+      const invoiceNo = isAdvancePaymentMode ? `ADV-${invoiceCounter}` : `INV-${invoiceCounter}`;
+
+      // If settling previous advance bill, mark original as ADVANCE_SETTLED so revenue isn't double-counted
+      if (settlingAdvanceBill) {
+        await db.from('sales').update({ status: 'ADVANCE_SETTLED', balance_due: 0 }).eq('id', settlingAdvanceBill.id);
+      }
+
+      const receipt = {
+        id: Date.now(),
+        invoice_no: invoiceNo,
+        timestamp: `${now.toISOString().split('T')[0]} ${now.toTimeString().slice(0,5)}`,
+        cashier_name: activeUser.name || 'Cashier',
+        customer: activeCustomer ? activeCustomer.name : 'Walk-in',
+        phone: activeCustomer ? activeCustomer.phone : '',
+        items: posCart,
+        subtotal: totals.subtotal,
+        discount: totals.totalDiscount,
+        exchange_credit: appliedExchangeCredit,
+        advance_deducted: totals.advanceDeducted,
+        net_total: totals.netPayable,
+        is_advance: isAdvancePaymentMode,
+        status: isAdvancePaymentMode ? 'ADVANCE_PENDING' : 'COMPLETED',
+        advance_paid: isAdvancePaymentMode ? enteredAmount : totals.advanceDeducted,
+        balance_due: isAdvancePaymentMode ? Math.max(0, totals.netPayable - enteredAmount) : 0,
+        pay_method: activePayMethod,
+        tendered: enteredAmount,
+        change: !isAdvancePaymentMode ? Math.max(0, enteredAmount - totals.netPayable) : 0
+      };
+
+      const { error } = await db.from('sales').insert([receipt]);
+      if (error) {
+        console.error("Sale Error:", error);
+        showPosToast('Database warning: ' + error.message, '⚠️', true);
+      } else {
+        showPosToast(`Sale ${invoiceNo} completed successfully!`, '✓');
+      }
+
+      lastCompletedReceipt = receipt;
+      invoiceCounter++;
+      if (isAdvancePaymentMode) toggleAdvancePaymentMode();
+      updateInvoiceBadge();
+
+      closePaymentModal();
+      showReceiptModal(receipt);
+      clearPosBill();
+      renderPosCatalog();
+    }
+
+    // --- THERMAL RECEIPT DISPLAY WITH REAL BARCODE ---
+    function showReceiptModal(r) {
+      document.getElementById('rcptInvoice').textContent = r.invoice_no;
+      document.getElementById('rcptDate').textContent = r.timestamp;
+      document.getElementById('rcptCashier').textContent = r.cashier_name || activeUser.name || 'Staff';
+      document.getElementById('rcptCustomer').textContent = r.customer || 'Walk-in';
+      document.getElementById('rcptSubtotal').textContent = `Rs. ${Number(r.subtotal).toLocaleString()}`;
+
+      const typeBadge = document.getElementById('rcptTypeBadge');
+      if (r.is_advance) {
+        typeBadge.textContent = "*** ADVANCE BILL ***";
+        typeBadge.className = "text-[10px] font-extrabold uppercase mt-1 border-2 border-black inline-block px-2 py-0.5 rounded";
+      } else {
+        typeBadge.textContent = "OFFICIAL RETAIL RECEIPT";
+        typeBadge.className = "text-[9px] font-bold uppercase mt-1 border border-black inline-block px-2 py-0.5 rounded";
+      }
+
+      const dRow = document.getElementById('rcptDiscountRow');
+      if (r.discount > 0) {
+        dRow.classList.remove('hidden');
+        document.getElementById('rcptDiscount').textContent = `- Rs. ${Number(r.discount).toLocaleString()}`;
+      } else { dRow.classList.add('hidden'); }
+
+      const eRow = document.getElementById('rcptExchangeRow');
+      if (r.exchange_credit > 0) {
+        eRow.classList.remove('hidden');
+        document.getElementById('rcptExchange').textContent = `- Rs. ${Number(r.exchange_credit).toLocaleString()}`;
+      } else { eRow.classList.add('hidden'); }
+
+      const advDedRow = document.getElementById('rcptAdvanceDeductedRow');
+      if (r.advance_deducted > 0) {
+        advDedRow.classList.remove('hidden');
+        document.getElementById('rcptAdvanceDeducted').textContent = `- Rs. ${Number(r.advance_deducted).toLocaleString()}`;
+      } else { advDedRow.classList.add('hidden'); }
+
+      document.getElementById('rcptNetTotal').textContent = `Rs. ${Number(r.net_total).toLocaleString()}`;
+      document.getElementById('rcptPayMethod').textContent = r.pay_method;
+
+      const advBlock = document.getElementById('rcptAdvanceSpecificBlock');
+      if (r.is_advance) {
+        advBlock.classList.remove('hidden');
+        document.getElementById('rcptAdvancePaidBig').textContent = `Rs. ${Number(r.advance_paid).toLocaleString()}`;
+        document.getElementById('rcptBalanceDueBig').textContent = `Rs. ${Number(r.balance_due).toLocaleString()}`;
+      } else {
+        advBlock.classList.add('hidden');
+      }
+
+      if (r.pay_method === 'CASH' && !r.is_advance) {
+        document.getElementById('rcptCashTenderedRow').classList.remove('hidden');
+        document.getElementById('rcptChangeRow').classList.remove('hidden');
+        document.getElementById('rcptTendered').textContent = `Rs. ${Number(r.tendered).toLocaleString()}`;
+        document.getElementById('rcptChange').textContent = `Rs. ${Number(r.change).toLocaleString()}`;
+      } else {
+        document.getElementById('rcptCashTenderedRow').classList.add('hidden');
+        document.getElementById('rcptChangeRow').classList.add('hidden');
+      }
+
+      document.getElementById('rcptItemsList').innerHTML = (r.items || []).map(i => `
+        <div class="flex justify-between">
+          <span>${i.name} x${i.qty}</span>
+          <span>${i.isExchange ? '-' : ''}${Math.abs(i.price * i.qty).toLocaleString()}</span>
+        </div>
+      `).join('');
+
+      try {
+        JsBarcode("#receiptBarcodeSvg", r.invoice_no, {
+          format: "CODE128",
+          width: 1.5,
+          height: 38,
+          displayValue: true,
+          fontSize: 10,
+          margin: 4
+        });
+      } catch (err) {
+        console.error("Barcode Render Error:", err);
+      }
+
+      document.getElementById('receiptModal').classList.remove('hidden');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.add('hidden');
+    }
+
+    // Custom In-App WhatsApp Modal (No browser prompt)
+    function openWaPrompt() {
+      if (!lastCompletedReceipt) return;
+      document.getElementById('waPromptInput').value = lastCompletedReceipt.phone || '';
+      document.getElementById('waPromptModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('waPromptInput').focus(), 60);
+    }
+
+    function closeWaPrompt() {
+      document.getElementById('waPromptModal').classList.add('hidden');
+    }
+
+    function confirmWaPrompt() {
+      if (!lastCompletedReceipt) return;
+      let r = lastCompletedReceipt;
+      let phone = document.getElementById('waPromptInput').value.replace(/\D/g, '');
+      if (!phone) return showPosToast('Please enter a valid WhatsApp number!', '⚠️', true);
+      if (phone.startsWith('0')) phone = '94' + phone.slice(1);
+      const msg = `*THISARU FASHION - ${r.is_advance ? 'ADVANCE' : 'OFFICIAL'} RECEIPT*\nInvoice: ${r.invoice_no}\nCashier: ${r.cashier_name || activeUser.name}\nCustomer: ${r.customer}\nNet Total: Rs. ${Number(r.net_total).toLocaleString()}${r.is_advance ? `\nAdvance Paid: Rs. ${Number(r.advance_paid).toLocaleString()}\nBalance Due: Rs. ${Number(r.balance_due).toLocaleString()}` : ''}\nThank you for shopping with us!`;
+      closeWaPrompt();
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // --- CUSTOMER SEARCH & REGISTER (F8) ---
+    function handleCustomerSearch(e) {
+      const q = e.target.value.trim().toLowerCase();
+      const div = document.getElementById('customerSearchResults');
+      if (!q) { div.classList.add('hidden'); return; }
+
+      const matches = customerList.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+      if (matches.length === 0) {
+        div.innerHTML = `<div class="p-3 text-zinc-500 text-center">No customer found. <button onclick="openSaveCustomerModal()" class="text-brand-gold underline font-bold">Add New?</button></div>`;
+      } else {
+        div.innerHTML = matches.map(c => `
+          <div onclick='selectCustomer(${JSON.stringify(c)})' class="p-2.5 hover:bg-zinc-800 cursor-pointer flex justify-between items-center">
+            <div><p class="font-bold text-white">${c.name}</p><p class="text-zinc-400 font-mono text-[11px]">${c.phone}</p></div>
+            <span class="text-brand-gold text-xs">Select →</span>
+          </div>
+        `).join('');
+      }
+      div.classList.remove('hidden');
+    }
+
+    function selectCustomer(c) {
+      activeCustomer = c;
+      document.getElementById('posCustomerSearch').value = '';
+      document.getElementById('customerSearchResults').classList.add('hidden');
+      document.getElementById('selectedCustomerBadge').classList.remove('hidden');
+      document.getElementById('selectedCustomerText').textContent = `👤 ${c.name} (${c.phone})`;
+    }
+
+    function clearSelectedCustomer() {
+      activeCustomer = null;
+      document.getElementById('posCustomerSearch').value = '';
+      document.getElementById('selectedCustomerBadge').classList.add('hidden');
+    }
+
+    function openSaveCustomerModal() {
+      document.getElementById('customerModal').classList.remove('hidden');
+      document.getElementById('newCustName').value = document.getElementById('posCustomerSearch').value;
+      document.getElementById('newCustPhone').value = '';
+      document.getElementById('newCustAddress').value = '';
+      setTimeout(() => document.getElementById('newCustName').focus(), 50);
+    }
+
+    function closeSaveCustomerModal() {
+      document.getElementById('customerModal').classList.add('hidden');
+    }
+
+    function saveNewCustomerRecord() {
+      const name = document.getElementById('newCustName').value.trim();
+      const phone = document.getElementById('newCustPhone').value.trim();
+      const address = document.getElementById('newCustAddress').value.trim();
+
+      if (!name || !phone) return showPosToast('Name and Phone are required!', '⚠️', true);
+
+      const newC = { name, phone, address };
+      customerList.unshift(newC);
+      localStorage.setItem('tf_pos_customers', JSON.stringify(customerList));
+
+      selectCustomer(newC);
+      closeSaveCustomerModal();
+      showPosToast('Customer registered and attached to this bill!', '✓');
+    }
+
+    // --- PROMO CODE ---
+    function applyPromoCode() {
+      const code = document.getElementById('discountCodeInput').value.trim().toUpperCase();
+      if (!code) return;
+      const subtotal = posCart.reduce((sum, i) => sum + (!i.isExchange ? (i.price * i.qty) : 0), 0);
+      if (subtotal <= 0) return showPosToast('Add items before applying code.', '⚠️', true);
+
+      if (code === 'VIP10') {
+        appliedDiscount = Math.round(subtotal * 0.10);
+        showPosToast('VIP10 applied! 10% Discount.', '🏷️');
+      } else if (code === 'FESTIVE500') {
+        appliedDiscount = 500;
+        showPosToast('FESTIVE500 applied! Rs. 500 Discount.', '🏷️');
+      } else {
+        showPosToast('Invalid Promo Code!', '✕', true);
+      }
+      calculatePosTotals();
+    }
+
+    // --- HELD BILLS ---
     function holdCurrentBill() {
-      if (posCart.length === 0) return alert('Cart is empty');
+      if (posCart.length === 0) return showPosToast('Cart is empty', '⚠️', true);
       heldBills.push({
         time: new Date().toLocaleTimeString(),
-        cust: document.getElementById('posCustName').value || 'Walk-in',
-        cart: [...posCart]
+        cust: activeCustomer ? activeCustomer.name : 'Walk-in',
+        cart: [...posCart],
+        customer: activeCustomer,
+        discount: appliedDiscount
       });
       document.getElementById('heldBillsCount').textContent = heldBills.length;
       clearPosBill();
-      alert('Bill held successfully.');
+      showPosToast('Bill placed on hold.', '⏸️');
     }
 
     function openHeldBillsModal() {
@@ -547,132 +1455,21 @@
     function recallHeldBill(idx) {
       const hb = heldBills.splice(idx, 1)[0];
       posCart = hb.cart;
+      if (hb.customer) selectCustomer(hb.customer);
+      appliedDiscount = hb.discount || 0;
       document.getElementById('heldBillsCount').textContent = heldBills.length;
       document.getElementById('heldBillsModal').classList.add('hidden');
       renderPosCart();
     }
 
-    // Checkout & Payment
-    function openPaymentModal() {
-      if (posCart.length === 0) return alert('Cart is empty');
-      let total = posCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-      document.getElementById('payModalTotal').textContent = `Rs. ${total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
-      document.getElementById('cashTenderedInput').value = total;
-      calculateChangeDue();
-      document.getElementById('paymentModal').classList.remove('hidden');
-    }
-
-    function closePaymentModal() {
-      document.getElementById('paymentModal').classList.add('hidden');
-    }
-
-    function selectPayMethod(method) {
-      activePayMethod = method;
-      document.querySelectorAll('.pm-btn').forEach(b => {
-        b.classList.remove('border-brand-gold', 'bg-brand-gold', 'text-black');
-        b.classList.add('border-zinc-800', 'bg-zinc-900', 'text-zinc-300');
-      });
-      const active = document.getElementById(`pm-${method}`);
-      active.classList.add('border-brand-gold', 'bg-brand-gold', 'text-black');
-      active.classList.remove('border-zinc-800', 'bg-zinc-900', 'text-zinc-300');
-    }
-
-    function calculateChangeDue() {
-      let total = posCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-      let tendered = Number(document.getElementById('cashTenderedInput').value) || 0;
-      let change = tendered - total;
-      document.getElementById('changeDueDisplay').textContent = `Rs. ${change.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
-    }
-
-    // --- SUPABASE: FINALIZE SALE & REDUCE STOCK ---
-    async function finalizeSale() {
-      let total = posCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-      let tendered = Number(document.getElementById('cashTenderedInput').value) || total;
-
-      // 1. Update Stock in Supabase
-      for (let ci of posCart) {
-        let prod = cloudCatalog.find(p => p.id === ci.id);
-        if (prod) {
-          let newStock = Math.max(0, prod.stock - ci.qty);
-          await db.from('products').update({ stock: newStock }).eq('id', ci.id);
-        }
-      }
-
-      // 2. Insert Sale Record to Supabase
-      const now = new Date();
-      const receipt = {
-        id: Date.now(), // Generate unique ID
-        invoice_no: `INV-${invoiceCounter}`,
-        timestamp: `${now.toISOString().split('T')[0]} ${now.toTimeString().slice(0,5)}`,
-        customer: document.getElementById('posCustName').value || 'Walk-in',
-        phone: document.getElementById('posCustPhone').value || '',
-        items: posCart,
-        net_total: total,
-        pay_method: activePayMethod,
-        tendered: tendered,
-        change: Math.max(0, tendered - total)
-      };
-
-      const { error } = await db.from('sales').insert([receipt]);
-      if (error) {
-        console.error("Sale Error:", error);
-        alert('Error saving receipt to cloud!');
-        return;
-      }
-
-      lastCompletedReceipt = { invoiceNo: receipt.invoice_no, ...receipt };
-      invoiceCounter++;
-      document.getElementById('currentInvoiceNo').textContent = `INV-${invoiceCounter}`;
-      
-      closePaymentModal();
-      showReceiptModal(lastCompletedReceipt);
-      clearPosBill();
-      renderPosCatalog(); // Refresh latest stock
-    }
-
-    function showReceiptModal(r) {
-      document.getElementById('rcptInvoice').textContent = r.invoiceNo;
-      document.getElementById('rcptDate').textContent = r.timestamp;
-      document.getElementById('rcptNetTotal').textContent = `Rs. ${r.net_total.toLocaleString()}`;
-      document.getElementById('rcptTendered').textContent = `Rs. ${r.tendered.toLocaleString()}`;
-      document.getElementById('rcptChange').textContent = `Rs. ${r.change.toLocaleString()}`;
-
-      document.getElementById('rcptItemsList').innerHTML = r.items.map(i => `
-        <div class="flex justify-between">
-          <span>${i.name} x${i.qty}</span>
-          <span>${(i.price * i.qty).toLocaleString()}</span>
-        </div>
-      `).join('');
-
-      document.getElementById('receiptModal').classList.remove('hidden');
-    }
-
-    function closeReceiptModal() {
-      document.getElementById('receiptModal').classList.add('hidden');
-    }
-
-    function sendWhatsAppReceipt() {
-      if (!lastCompletedReceipt) return;
-      let r = lastCompletedReceipt;
-      let phone = r.phone.replace(/\D/g, '');
-      if (!phone) {
-        phone = prompt('Enter WhatsApp Number (e.g. 0771234567):', '94');
-        if (!phone) return;
-      }
-      if (phone.startsWith('0')) phone = '94' + phone.slice(1);
-      const msg = `*THISARU FASHION - RECEIPT*\nInvoice: ${r.invoiceNo}\nTotal: Rs. ${r.net_total.toLocaleString()}\nThank you!`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    // --- SUPABASE: FETCH SALES HISTORY ---
+    // --- SALES HISTORY ---
     async function renderSalesHistory() {
       const tbody = document.getElementById('salesHistoryBody');
-      tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-zinc-500">Loading Cloud Transactions...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-zinc-500 font-mono">Loading Transactions...</td></tr>`;
 
       const { data, error } = await db.from('sales').select('*').order('id', { ascending: false }).limit(50);
-      
       if (error || !data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-zinc-500">No transactions recorded yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-zinc-500 font-mono">No transactions recorded yet.</td></tr>`;
         return;
       }
 
@@ -680,11 +1477,18 @@
         <tr class="hover:bg-zinc-900/60">
           <td class="p-4 font-mono font-bold text-brand-gold">${s.invoice_no}</td>
           <td class="p-4 font-mono text-zinc-400">${s.timestamp}</td>
-          <td class="p-4">${s.customer}</td>
+          <td class="p-4">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${s.is_advance ? 'bg-sky-500/20 text-sky-400 border border-sky-400/40' : 'bg-emerald-500/20 text-emerald-400'}">
+              ${s.is_advance ? (s.status === 'ADVANCE_SETTLED' ? 'ADV-SETTLED' : 'ADVANCE') : 'COMPLETED'}
+            </span>
+          </td>
+          <td class="p-4 font-semibold text-white">${s.customer}</td>
           <td class="p-4"><span class="px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-mono">${s.pay_method}</span></td>
-          <td class="p-4 font-mono font-bold text-emerald-400">Rs. ${s.net_total.toLocaleString()}</td>
+          <td class="p-4 font-mono font-bold ${s.is_advance ? 'text-sky-400' : 'text-emerald-400'}">
+            Rs. ${Number(s.is_advance ? s.advance_paid : s.net_total).toLocaleString()}
+          </td>
           <td class="p-4 text-right">
-             <button onclick='showReceiptModal({ invoiceNo: "${s.invoice_no}", timestamp: "${s.timestamp}", net_total: ${s.net_total}, tendered: ${s.tendered}, change: ${s.change}, items: ${JSON.stringify(s.items)} })' class="px-3 py-1 rounded bg-zinc-800 hover:bg-brand-gold hover:text-black font-bold text-xs">View</button>
+             <button onclick='lastCompletedReceipt=${JSON.stringify(s)}; showReceiptModal(${JSON.stringify(s)})' class="px-3 py-1 rounded bg-zinc-800 hover:bg-brand-gold hover:text-black font-bold text-xs">View</button>
           </td>
         </tr>
       `).join('');
