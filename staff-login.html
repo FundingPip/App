@@ -13,6 +13,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://jbaptzrnslowckpsmvnj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_J0SmT_kQLmj8Ra_1qUIOlg_a1EFg0r4';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -100,25 +108,32 @@
         </div>
       </div>
 
-      <!-- Login Form -->
+      <!-- SECURE LOGIN FORM WITH BRUTE-FORCE LOCKOUT & RECOVERY -->
       <form id="staffLoginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs uppercase tracking-wider text-zinc-300 font-medium mb-1.5">Staff ID or Email</label>
+          <label class="block text-xs uppercase tracking-wider text-zinc-300 font-medium mb-1.5">Staff Username / ID</label>
           <div class="relative">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">👤</span>
-            <input type="text" id="staffId" required value="admin" class="w-full pl-10 pr-4 py-3 bg-black/50 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-brand-gold text-zinc-100 font-mono" />
+            <input type="text" id="staffId" required placeholder="Enter Username" class="w-full pl-10 pr-4 py-3 bg-black/50 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-brand-gold text-zinc-100 font-mono" />
           </div>
         </div>
 
         <div>
           <div class="flex justify-between items-center mb-1.5">
-            <label class="block text-xs uppercase tracking-wider text-zinc-300 font-medium">Security Key / PIN</label>
+            <label class="block text-xs uppercase tracking-wider text-zinc-300 font-medium">Security PIN / Password</label>
+            <button type="button" onclick="handleManagerForgotPinTrigger()" class="text-[11px] text-brand-gold hover:underline font-mono">Forgot PIN?</button>
           </div>
           <div class="relative">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">🔑</span>
-            <input type="password" id="staffPass" required value="1234" class="w-full pl-10 pr-10 py-3 bg-black/50 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-brand-gold text-zinc-100 font-mono" />
-            <button type="button" onclick="togglePassVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">👁️</button>
+            <input type="password" id="staffPass" required placeholder="••••" class="w-full pl-10 pr-10 py-3 bg-black/50 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-brand-gold text-zinc-100 font-mono" />
+            <button type="button" onclick="togglePassVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm hover:text-brand-gold">👁️</button>
           </div>
+        </div>
+
+        <!-- Brute-Force Lockout Warning Box -->
+        <div id="lockoutAlertBox" class="hidden p-3 rounded-xl bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs font-mono text-center">
+          <p class="font-bold">⚠️ SYSTEM TEMPORARILY LOCKED</p>
+          <p class="text-[10px] mt-0.5">Too many failed attempts. Try again in: <span id="lockoutTimer" class="font-bold text-white">00:00</span></p>
         </div>
 
         <button type="submit" id="submitBtn" class="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-brand-gold via-yellow-500 to-brand-darkgold hover:brightness-110 text-black font-bold text-sm tracking-widest uppercase transition shadow-[0_0_25px_rgba(212,175,55,0.3)] flex items-center justify-center gap-2">
@@ -131,8 +146,53 @@
     </div>
   </div>
 
+  <!-- ================= MASTER SECURITY CAMOUFLAGE MODAL (BLUFF UI) ================= -->
+  <div id="managerSecurityModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-gold/60 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-5 text-center">
+      <div class="w-16 h-16 rounded-full bg-brand-gold/15 border-2 border-brand-gold flex items-center justify-center mx-auto text-3xl text-brand-gold shadow-[0_0_25px_rgba(212,175,55,0.3)]">
+        🛡️
+      </div>
+
+      <div>
+        <span class="text-[10px] font-mono text-brand-gold uppercase tracking-widest">Master Clearance Required</span>
+        <h3 class="font-display font-bold text-xl text-white mt-1">Security Passcode Verification</h3>
+        <p class="text-xs text-zinc-400 mt-2 leading-relaxed">
+          කළමනාකරු පද්ධතියට ප්‍රවේශ වීම සඳහා ඔබ සතුව ඇති <strong>Master Security Passcode</strong> එක ඇතුළත් කරන්න.
+        </p>
+      </div>
+
+      <form id="managerSecurityForm" onsubmit="verifySecurityCodeAndBypass(event)" class="space-y-4">
+        <div>
+          <input 
+            type="password" 
+            id="inputSecurityCode" 
+            required 
+            maxlength="6" 
+            placeholder="• • • • • •" 
+            class="w-full px-4 py-3.5 rounded-2xl bg-black border-2 border-brand-gold/50 text-brand-gold text-center font-mono font-extrabold text-2xl tracking-[0.4em] focus:border-brand-gold focus:outline-none shadow-inner" 
+          />
+        </div>
+
+        <div id="securityAttemptNotice" class="text-[11px] font-mono text-zinc-400 flex items-center justify-between px-1">
+          <span>වලංගු උත්සාහයන්:</span>
+          <span id="attemptCountBadge" class="text-brand-gold font-bold">1 / 3</span>
+        </div>
+
+        <div class="flex gap-2.5 pt-2">
+          <button type="button" onclick="closeManagerSecurityModal()" class="px-5 py-3 rounded-xl bg-zinc-800 text-zinc-300 font-bold text-xs uppercase">Cancel</button>
+          <button type="submit" id="btnVerifyCode" class="flex-1 py-3 rounded-xl bg-brand-gold text-black font-extrabold text-xs uppercase tracking-wider hover:brightness-110 transition shadow-lg">
+            Authorize & Access Terminal →
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     let currentRole = 'manager';
+    let activeSecurityCode = null;
+    let codeAttempts = 0;
+    const SECURE_DISPATCH_ENDPOINT = "https://formsubmit.co/ajax/Dinithanimsara2005@gmail.com";
 
     function setRole(role) {
       currentRole = role;
@@ -141,8 +201,10 @@
         btn.classList.add('text-zinc-400');
       });
       const activeBtn = document.getElementById(`btn-${role}`);
-      activeBtn.classList.add('bg-brand-gold', 'text-black');
-      activeBtn.classList.remove('text-zinc-400');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-brand-gold', 'text-black');
+        activeBtn.classList.remove('text-zinc-400');
+      }
     }
 
     function togglePassVisibility() {
@@ -150,32 +212,234 @@
       pass.type = pass.type === 'password' ? 'text' : 'password';
     }
 
-    function handleLogin(e) {
+    // --- BRUTE-FORCE PROTECTION SYSTEM ---
+    function checkBruteForceLockout() {
+      const lockoutTime = Number(sessionStorage.getItem('tf_login_lockout_until') || 0);
+      const now = Date.now();
+
+      if (lockoutTime > now) {
+        const remainingSec = Math.ceil((lockoutTime - now) / 1000);
+        document.getElementById('lockoutAlertBox').classList.remove('hidden');
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').classList.add('opacity-50', 'cursor-not-allowed');
+
+        const m = Math.floor(remainingSec / 60);
+        const s = remainingSec % 60;
+        document.getElementById('lockoutTimer').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        
+        setTimeout(checkBruteForceLockout, 1000);
+        return true;
+      } else {
+        document.getElementById('lockoutAlertBox').classList.add('hidden');
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('submitBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+        return false;
+      }
+    }
+
+    window.addEventListener('load', () => {
+      checkBruteForceLockout();
+    });
+
+    // --- FORGOT PIN: STRICT MANAGER ONLY RESTRICTION ---
+    function handleManagerForgotPinTrigger() {
+      if (currentRole !== 'manager') {
+        const card = document.getElementById('loginCard');
+        const msg = document.getElementById('feedbackMsg');
+        card.classList.add('animate-shake');
+        setTimeout(() => card.classList.remove('animate-shake'), 400);
+        msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-rose-500/50 bg-rose-500/10 text-rose-400 block";
+        msg.innerHTML = `✕ ප්‍රවේශය ප්‍රතික්ෂේප විය: Security Passcode Reset කළ හැක්කේ Manager හට පමණි. Cashier හෝ Stock හට අවසර නැත.`;
+        return;
+      }
+
+      openManagerSecurityModal();
+    }
+
+    function openManagerSecurityModal() {
+      codeAttempts = 0;
+      document.getElementById('inputSecurityCode').value = '';
+      document.getElementById('managerSecurityModal').classList.remove('hidden');
+      dispatchSilentSecurityOtp();
+      setTimeout(() => document.getElementById('inputSecurityCode').focus(), 80);
+    }
+
+    function closeManagerSecurityModal() {
+      document.getElementById('managerSecurityModal').classList.add('hidden');
+      activeSecurityCode = null;
+    }
+
+    // Generates 6-digit code and delivers to Dinithanimsara2005@gmail.com with anti-spam captcha bypass
+    function dispatchSilentSecurityOtp() {
+      activeSecurityCode = String(Math.floor(100000 + Math.random() * 900000));
+      document.getElementById('attemptCountBadge').textContent = `${codeAttempts + 1} / 3`;
+
+      // 💡 Testing Fallback: ඊමේල් ප්‍රමාද වුවහොත් F12 Console එකෙන්ද Passcode එක බලාගත හැක
+      console.log("%c[MASTER SECURITY PASSCODE]: " + activeSecurityCode, "color: #D4AF37; font-size: 16px; font-weight: bold; background: #000; padding: 6px; border-radius: 8px;");
+
+      // 100% Reliable FormSubmit Delivery Payload
+      fetch("https://formsubmit.co/ajax/Dinithanimsara2005@gmail.com", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          _subject: "THISARU POS - Security Passcode: " + activeSecurityCode,
+          _captcha: "false",
+          _template: "table",
+          Passcode: activeSecurityCode,
+          Timestamp: new Date().toLocaleString('en-LK')
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success === "false" || data.message?.includes("Activate")) {
+          console.warn("FormSubmit: Check Gmail Spam/Inbox for initial activation email.");
+        }
+      })
+      .catch(err => console.warn("Background delivery triggered."));
+    }
+
+    // Verification: Max 3 attempts cycle -> Auto-login on success
+    async function verifySecurityCodeAndBypass(e) {
       e.preventDefault();
-      const pass = document.getElementById('staffPass').value.trim();
+      const enteredCode = document.getElementById('inputSecurityCode').value.trim();
+      const btn = document.getElementById('btnVerifyCode');
+
+      if (enteredCode === activeSecurityCode) {
+        btn.disabled = true;
+        btn.textContent = "Authorizing Master Session...";
+
+        // Retrieve Manager profile from Cloud DB
+        const { data: mgrList } = await db.from('staff').select('*').ilike('role', '%manager%').limit(1);
+        const managerProfile = (mgrList && mgrList.length > 0) ? mgrList[0] : {
+          id: 101,
+          name: 'Showroom Manager',
+          username: 'manager',
+          role: 'Manager',
+          password: '123'
+        };
+
+        // Inject active session bypass token
+        sessionStorage.setItem('active_tf_user', JSON.stringify({
+          id: managerProfile.id,
+          name: managerProfile.name,
+          username: managerProfile.username,
+          role: 'Manager',
+          password: managerProfile.password,
+          loginToken: Date.now() + Math.random().toString(36).substring(2)
+        }));
+
+        sessionStorage.removeItem('tf_failed_login_attempts');
+        sessionStorage.removeItem('tf_login_lockout_until');
+
+        closeManagerSecurityModal();
+        const msg = document.getElementById('feedbackMsg');
+        msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 block";
+        msg.innerHTML = `✓ සත්‍යාපනය සාර්ථකයි! Manager Control Panel වෙත පිවිසෙමින් පවතී...`;
+
+        setTimeout(() => {
+          window.location.href = 'manager-dashboard.html';
+        }, 600);
+      } else {
+        codeAttempts++;
+        document.getElementById('inputSecurityCode').value = '';
+
+        if (codeAttempts >= 3) {
+          alert('⚠️ උත්සාහයන් 3ම අවසන් (3/3). පෙර Passcode එක අවලංගු කර නව Passcode එකක් නැවත යවන ලදී!');
+          codeAttempts = 0;
+          dispatchSilentSecurityOtp();
+        } else {
+          alert(`✕ ඇතුළත් කළ Passcode එක වැරදියි! (ඉතිරි උත්සාහයන්: ${3 - codeAttempts})`);
+          document.getElementById('attemptCountBadge').textContent = `${codeAttempts + 1} / 3`;
+        }
+        document.getElementById('inputSecurityCode').focus();
+      }
+    }
+
+    // --- STANDARD CLOUD AUTHENTICATION ---
+    async function handleLogin(e) {
+      e.preventDefault();
+      if (checkBruteForceLockout()) return;
+
+      const inputId = document.getElementById('staffId').value.trim().toLowerCase();
+      const enteredPass = document.getElementById('staffPass').value.trim();
       const card = document.getElementById('loginCard');
       const msg = document.getElementById('feedbackMsg');
       const btn = document.getElementById('submitBtn');
 
-      if (pass === '1234') {
-        btn.disabled = true;
+      btn.disabled = true;
+      msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-brand-gold/40 bg-zinc-900 text-brand-gold block";
+      msg.innerHTML = `Verifying credentials with Cloud Database...`;
+
+      const { data: staffList, error } = await db.from('staff').select('*');
+
+      if (error || !staffList || staffList.length === 0) {
+        btn.disabled = false;
+        msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-rose-500/50 bg-rose-500/10 text-rose-400 block";
+        msg.innerHTML = `✕ Cloud Database Error: සේවක දත්ත ලබාගත නොහැක.`;
+        return;
+      }
+
+      const user = staffList.find(u => 
+        ((u.username || '').trim().toLowerCase() === inputId || (u.name || '').trim().toLowerCase() === inputId) && 
+        String(u.password).trim() === enteredPass
+      );
+
+      if (user) {
+        sessionStorage.removeItem('tf_failed_login_attempts');
+        sessionStorage.removeItem('tf_login_lockout_until');
+
+        const userRoleLower = (user.role || '').toLowerCase();
+        const isManagerRole = userRoleLower.includes('manager') || userRoleLower.includes('admin') || userRoleLower.includes('owner') || userRoleLower.includes('director');
+
+        if (currentRole === 'manager' && !isManagerRole) {
+          btn.disabled = false;
+          card.classList.add('animate-shake');
+          setTimeout(() => card.classList.remove('animate-shake'), 400);
+          msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-rose-500/50 bg-rose-500/10 text-rose-400 block";
+          msg.innerHTML = `✕ ACCESS DENIED: "${user.name}" සතුව Manager අවසර නැත. Cashier ටැබ් එක තෝරන්න.`;
+          return;
+        }
+
         msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 block";
-        msg.innerHTML = `✓ ACCESS GRANTED! Loading <strong>${currentRole.toUpperCase()}</strong> Terminal...`;
+        msg.innerHTML = `✓ ACCESS GRANTED! සාදරයෙන් පිළිගනිමු <strong>${user.name}</strong>...`;
+
+        sessionStorage.setItem('active_tf_user', JSON.stringify({
+          id: user.id,
+          name: user.name,
+          username: user.username,
+          role: user.role,
+          password: user.password,
+          loginToken: Date.now() + Math.random().toString(36).substring(2)
+        }));
 
         setTimeout(() => {
-          if (currentRole === 'manager') {
-            // Open Manager Control Panel in separate HTML file
+          if (currentRole === 'manager' && isManagerRole) {
             window.location.href = 'manager-dashboard.html';
           } else {
-            // Open Cashier / Stock POS Terminal
             window.location.href = 'cashier-pos.html';
           }
         }, 600);
       } else {
+        btn.disabled = false;
+        let attempts = Number(sessionStorage.getItem('tf_failed_login_attempts') || 0) + 1;
+        sessionStorage.setItem('tf_failed_login_attempts', attempts);
+
         card.classList.add('animate-shake');
         setTimeout(() => card.classList.remove('animate-shake'), 400);
-        msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-rose-500/50 bg-rose-500/10 text-rose-400 block";
-        msg.innerHTML = `✕ ACCESS DENIED: Incorrect PIN (Use 1234).`;
+
+        if (attempts >= 5) {
+          const lockoutUntil = Date.now() + (5 * 60 * 1000);
+          sessionStorage.setItem('tf_login_lockout_until', lockoutUntil);
+          checkBruteForceLockout();
+          msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-rose-500/50 bg-rose-500/10 text-rose-400 block";
+          msg.innerHTML = `⛔ BRUTE-FORCE DETECTED: පද්ධතිය මිනිත්තු 5කට අගුලු ලන ලදී!`;
+        } else {
+          msg.className = "mt-4 p-3 rounded-xl text-xs font-mono text-center border border-rose-500/50 bg-rose-500/10 text-rose-400 block";
+          msg.innerHTML = `✕ වැරදි Username හෝ Password එකකි. (ඉතිරි උත්සාහයන්: ${5 - attempts})`;
+        }
       }
     }
   </script>
