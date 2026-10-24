@@ -1045,30 +1045,41 @@
       window.open(url, '_blank', 'noopener,noreferrer');
     }
 
-    // --- PROFESSIONAL THEME TOGGLE (SVG SUN / MOON) ---
+    // --- PROFESSIONAL THEME TOGGLE (DESKTOP & MOBILE SUPPORTED) ---
     const themeToggle = document.getElementById('themeToggle');
     const iconSun = document.getElementById('themeIconSun');
     const iconMoon = document.getElementById('themeIconMoon');
 
+    const themeToggleMobile = document.getElementById('themeToggleMobile');
+    const iconSunMobile = document.getElementById('themeIconSunMobile');
+    const iconMoonMobile = document.getElementById('themeIconMoonMobile');
+
     function syncThemeUI(isDark) {
       if (isDark) {
         document.documentElement.classList.add('dark');
-        iconSun.classList.remove('hidden');
-        iconMoon.classList.add('hidden');
+        if (iconSun) iconSun.classList.remove('hidden');
+        if (iconMoon) iconMoon.classList.add('hidden');
+        if (iconSunMobile) iconSunMobile.classList.remove('hidden');
+        if (iconMoonMobile) iconMoonMobile.classList.add('hidden');
       } else {
         document.documentElement.classList.remove('dark');
-        iconSun.classList.add('hidden');
-        iconMoon.classList.remove('hidden');
+        if (iconSun) iconSun.classList.add('hidden');
+        if (iconMoon) iconMoon.classList.remove('hidden');
+        if (iconSunMobile) iconSunMobile.classList.add('hidden');
+        if (iconMoonMobile) iconMoonMobile.classList.remove('hidden');
       }
     }
 
     // Default to dark mode
     syncThemeUI(true);
 
-    themeToggle.addEventListener('click', () => {
+    const handleThemeToggle = () => {
       const isDark = !document.documentElement.classList.contains('dark');
       syncThemeUI(isDark);
-    });
+    };
+
+    if (themeToggle) themeToggle.addEventListener('click', handleThemeToggle);
+    if (themeToggleMobile) themeToggleMobile.addEventListener('click', handleThemeToggle);
 
     // --- CLOUD CUSTOMER AUTHENTICATION & PROFILE SYSTEM (SUPABASE) ---
     let activeCustomerSession = JSON.parse(sessionStorage.getItem('tf_active_customer_session')) || null;
